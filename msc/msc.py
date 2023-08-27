@@ -21,7 +21,7 @@ def LoadLibrary(
     return msc
 
 
-def LoadMSC():
+def LoadMSC() -> CDLL:
     system = platform.system()
     arch = platform.architecture()[0]
 
