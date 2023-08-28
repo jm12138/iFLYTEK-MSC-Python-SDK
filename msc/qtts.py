@@ -1,4 +1,4 @@
-from ctypes import _FuncPointer
+from _ctypes import CFuncPtr
 from ctypes import byref, string_at
 from ctypes import CFUNCTYPE, POINTER
 from ctypes import c_int, c_uint, c_void_p, c_char_p
@@ -312,9 +312,9 @@ def QTTSSetParam(sessionID: str, paramName: str, paramValue: str):
 
 def QTTSRegisterNotify(
     sessionID: str,
-    rsltCb: _FuncPointer,
-    statusCb: _FuncPointer,
-    errCb: _FuncPointer,
+    rsltCb: CFuncPtr,
+    statusCb: CFuncPtr,
+    errCb: CFuncPtr,
     userData: bytes,
 ):
     sessionID = sessionID.encode("UTF-8") if sessionID else None

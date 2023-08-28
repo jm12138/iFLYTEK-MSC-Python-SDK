@@ -2,8 +2,6 @@ from .msc import msc
 
 from .msp import MSPStatus, MSPAssert
 from .msp import MSPLogin, MSPLogout
-from .msp import MSPUpload, MSPDownload
-from .msp import MSPAppendData, MSPGetResult
 from .msp import MSPSetParam, MSPGetParam
 from .msp import MSPUploadData, MSPDownloadData
 from .msp import MSPSearch, MSPNlpSearch
@@ -42,10 +40,6 @@ __all__ = [
     "MSPAssert",
     "MSPLogin",
     "MSPLogout",
-    "MSPUpload",
-    "MSPDownload",
-    "MSPAppendData",
-    "MSPGetResult",
     "MSPSetParam",
     "MSPGetParam",
     "MSPUploadData",

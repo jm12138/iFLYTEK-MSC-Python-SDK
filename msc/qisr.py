@@ -1,4 +1,4 @@
-from ctypes import _FuncPointer
+from _ctypes import CFuncPtr
 from ctypes import byref
 from ctypes import CFUNCTYPE, POINTER
 from ctypes import c_int, c_uint, c_void_p, c_char_p
@@ -379,9 +379,9 @@ def QISRSetParam(sessionID: str, paramName: str, paramValue: str):
 
 def QISRRegisterNotify(
     sessionID: str,
-    rsltCb: _FuncPointer,
-    statusCb: _FuncPointer,
-    errCb: _FuncPointer,
+    rsltCb: CFuncPtr,
+    statusCb: CFuncPtr,
+    errCb: CFuncPtr,
     userData: bytes,
 ):
     sessionID = sessionID.encode("UTF-8") if sessionID else None
@@ -394,7 +394,7 @@ def QISRBuildGrammar(
     grammarContent: str,
     grammarLength: int,
     params: str,
-    callback: _FuncPointer,
+    callback: CFuncPtr,
     userData: bytes,
 ):
     grammarType = grammarType.encode("UTF-8") if grammarType else None
@@ -411,7 +411,7 @@ def QISRUpdateLexicon(
     lexiconContent: str,
     lexiconLength: int,
     params: str,
-    callback: _FuncPointer,
+    callback: CFuncPtr,
     userData: bytes,
 ):
     lexiconName = lexiconName.encode("UTF-8") if lexiconName else None

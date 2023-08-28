@@ -1,4 +1,4 @@
-from ctypes import _FuncPointer
+from _ctypes import CFuncPtr
 from ctypes import byref
 from ctypes import CFUNCTYPE, POINTER
 from ctypes import c_int, c_uint, c_void_p, c_char_p
@@ -96,7 +96,7 @@ def QIVWAudioWrite(sessionID: str, audioData: bytes, audioStatus: int):
     MSPAssert(errorCode)
 
 
-def QIVWRegisterNotify(sessionID: str, msgProcCb: _FuncPointer, userData: bytes):
+def QIVWRegisterNotify(sessionID: str, msgProcCb: CFuncPtr, userData: bytes):
     sessionID = sessionID.encode("UTF-8") if sessionID else None
     errorCode: int = msc.QIVWRegisterNotify(sessionID, msgProcCb, userData)
     MSPAssert(errorCode)
