@@ -266,7 +266,8 @@ msc.QISRGetParam.restype = c_int
 msc.QISRSetParam.argtypes = [c_char_p, c_char_p, c_char_p]
 msc.QISRSetParam.restype = c_int
 
-recog_result_ntf_handler = CFUNCTYPE(None, c_char_p, c_char_p, c_int, c_int, c_void_p)
+recog_result_ntf_handler = CFUNCTYPE(
+    None, c_char_p, c_char_p, c_int, c_int, c_void_p)
 recog_status_ntf_handler = CFUNCTYPE(
     None, c_char_p, c_int, c_int, c_int, c_void_p, c_void_p
 )
@@ -307,8 +308,9 @@ def QISRSessionBegin(grammarList: str, params: str) -> str:
     grammarList = grammarList.encode("UTF-8") if grammarList else None
     params = params.encode("UTF-8") if params else None
     errorCode = c_int()
-    sessionID: bytes = msc.QISRSessionBegin(grammarList, params, byref(errorCode))
-    MSPAssert(errorCode.value)
+    sessionID: bytes = msc.QISRSessionBegin(
+        grammarList, params, byref(errorCode))
+    MSPAssert(errorCode.value, 'QISRSessionBegin failed')
     return sessionID.decode("UTF-8") if sessionID else None
 
 
@@ -321,9 +323,10 @@ def QISRAudioWrite(
     epStatus = c_int()
     recogStatus = c_int()
     errorCode: int = msc.QISRAudioWrite(
-        sessionID, waveData, waveLen, audioStatus, byref(epStatus), byref(recogStatus)
+        sessionID, waveData, waveLen, audioStatus, byref(
+            epStatus), byref(recogStatus)
     )
-    MSPAssert(errorCode)
+    MSPAssert(errorCode, 'QISRAudioWrite failed')
     return epStatus.value, recogStatus.value
 
 
@@ -334,7 +337,7 @@ def QISRGetResult(sessionID: str, waitTime: int) -> Tuple[str, int]:
     result: bytes = msc.QISRGetResult(
         sessionID, byref(rsltStatus), waitTime, byref(errorCode)
     )
-    MSPAssert(errorCode.value)
+    MSPAssert(errorCode.value, 'QISRGetResult failed')
     return result.decode("UTF-8") if result else None, rsltStatus.value
 
 
@@ -344,9 +347,10 @@ def QISRGetBinaryResult(sessionID: str, waitTime: int) -> Tuple[bytes, int, int]
     rsltStatus = c_int()
     errorCode = c_int()
     result: bytes = msc.QISRGetBinaryResult(
-        sessionID, byref(rsltLen), byref(rsltStatus), waitTime, byref(errorCode)
+        sessionID, byref(rsltLen), byref(
+            rsltStatus), waitTime, byref(errorCode)
     )
-    MSPAssert(errorCode.value)
+    MSPAssert(errorCode.value, 'QISRGetBinaryResult failed')
     return result, rsltLen.value, rsltStatus.value
 
 
@@ -354,7 +358,7 @@ def QISRSessionEnd(sessionID: str, hints: str):
     sessionID = sessionID.encode("UTF-8") if sessionID else None
     hints = hints.encode("UTF-8") if hints else None
     errorCode: int = msc.QISRSessionEnd(sessionID, hints)
-    MSPAssert(errorCode)
+    MSPAssert(errorCode, 'QISRSessionEnd failed')
 
 
 def QISRGetParam(sessionID: str, paramName: str) -> Tuple[str, int]:
@@ -365,7 +369,7 @@ def QISRGetParam(sessionID: str, paramName: str) -> Tuple[str, int]:
     paramValue: bytes = msc.QISRGetParam(
         sessionID, paramName, None, byref(valueLen), byref(errorCode)
     )
-    MSPAssert(errorCode.value)
+    MSPAssert(errorCode.value, 'QISRGetParam failed')
     return paramValue.decode("UTF-8") if paramValue else None, valueLen.value
 
 
@@ -374,7 +378,7 @@ def QISRSetParam(sessionID: str, paramName: str, paramValue: str):
     paramName = paramName.encode("UTF-8") if paramName else None
     paramValue = paramValue.encode("UTF-8") if paramValue else None
     errorCode: int = msc.QISRSetParam(sessionID, paramName, paramValue)
-    MSPAssert(errorCode)
+    MSPAssert(errorCode, 'QISRSetParam failed')
 
 
 def QISRRegisterNotify(
@@ -385,8 +389,9 @@ def QISRRegisterNotify(
     userData: bytes,
 ):
     sessionID = sessionID.encode("UTF-8") if sessionID else None
-    errorCode: int = msc.QISRRegisterNotify(sessionID, rsltCb, statusCb, errCb, userData)
-    MSPAssert(errorCode)
+    errorCode: int = msc.QISRRegisterNotify(
+        sessionID, rsltCb, statusCb, errCb, userData)
+    MSPAssert(errorCode, 'QISRRegisterNotify failed')
 
 
 def QISRBuildGrammar(
@@ -403,7 +408,7 @@ def QISRBuildGrammar(
     errorCode: int = msc.QISRBuildGrammar(
         grammarType, grammarContent, grammarLength, params, callback, userData
     )
-    MSPAssert(errorCode)
+    MSPAssert(errorCode, 'QISRBuildGrammar failed')
 
 
 def QISRUpdateLexicon(
@@ -420,4 +425,4 @@ def QISRUpdateLexicon(
     errorCode: int = msc.QISRUpdateLexicon(
         lexiconName, lexiconContent, lexiconLength, params, callback, userData
     )
-    MSPAssert(errorCode)
+    MSPAssert(errorCode, 'QISRUpdateLexicon failed')

@@ -242,7 +242,8 @@ msc.QISEAudioWrite.argtypes = [
 ]
 msc.QISEAudioWrite.restype = c_int
 
-msc.QISEGetResult.argtypes = [c_char_p, POINTER(c_uint), POINTER(c_int), POINTER(c_int)]
+msc.QISEGetResult.argtypes = [c_char_p, POINTER(
+    c_uint), POINTER(c_int), POINTER(c_int)]
 msc.QISEGetResult.restype = c_char_p
 
 msc.QISEResultInfo.argtypes = [c_char_p, POINTER(c_int)]
@@ -259,8 +260,9 @@ def QISESessionBegin(params: str, userModelId: str) -> str:
     params = params.encode("UTF-8") if params else None
     userModelId = userModelId.encode("UTF-8") if userModelId else None
     errorCode = c_int()
-    sessionID: bytes = msc.QISESessionBegin(params, userModelId, byref(errorCode))
-    MSPAssert(errorCode.value)
+    sessionID: bytes = msc.QISESessionBegin(
+        params, userModelId, byref(errorCode))
+    MSPAssert(errorCode.value, "QISESessionBegin failed")
     return sessionID.decode("UTF-8") if sessionID else None
 
 
@@ -269,7 +271,7 @@ def QISETextPut(sessionID: str, textString: str, textLen: int, params: str):
     textString = textString.encode("UTF-8") if textString else None
     params = params.encode("UTF-8") if params else None
     errorCode: int = msc.QISETextPut(sessionID, textString, textLen, params)
-    MSPAssert(errorCode)
+    MSPAssert(errorCode, "QISETextPut failed")
 
 
 def QISEAudioWrite(
@@ -280,9 +282,10 @@ def QISEAudioWrite(
     epStatus = c_int()
     recogStatus = c_int()
     errorCode: int = msc.QISEAudioWrite(
-        sessionID, waveData, waveLen, audioStatus, byref(epStatus), byref(recogStatus)
+        sessionID, waveData, waveLen, audioStatus, byref(
+            epStatus), byref(recogStatus)
     )
-    MSPAssert(errorCode)
+    MSPAssert(errorCode, "QISEAudioWrite failed")
     return epStatus.value, recogStatus.value
 
 
@@ -294,7 +297,7 @@ def QISEGetResult(sessionID: str) -> Tuple[str, int, int]:
     result: bytes = msc.QISEGetResult(
         sessionID, byref(rsltLen), byref(rsltStatus), byref(errorCode)
     )
-    MSPAssert(errorCode.value)
+    MSPAssert(errorCode.value, "QISEGetResult failed")
     return result.decode("UTF-8") if result else None, rsltLen.value, rsltStatus.value
 
 
@@ -302,7 +305,7 @@ def QISEResultInfo(sessionID: str) -> str:
     sessionID = sessionID.encode("UTF-8") if sessionID else None
     errorCode = c_int()
     resultInfo: bytes = msc.QISEResultInfo(sessionID, byref(errorCode))
-    MSPAssert(errorCode.value)
+    MSPAssert(errorCode.value, "QISEResultInfo failed")
     return resultInfo.decode("UTF-8") if resultInfo else None
 
 
@@ -310,7 +313,7 @@ def QISESessionEnd(sessionID: str, hints: str):
     sessionID = sessionID.encode("UTF-8") if sessionID else None
     hints = hints.encode("UTF-8") if hints else None
     errorCode: int = msc.QISESessionEnd(sessionID, hints)
-    MSPAssert(errorCode)
+    MSPAssert(errorCode, "QISESessionEnd failed")
 
 
 def QISEGetParam(sessionID: str, paramName: str) -> Tuple[str, int]:
@@ -318,6 +321,7 @@ def QISEGetParam(sessionID: str, paramName: str) -> Tuple[str, int]:
     paramName = paramName.encode("UTF-8") if paramName else None
     valueLen = c_uint()
     paramValue = c_char_p()
-    errorCode: int = msc.QISEGetParam(sessionID, paramName, paramValue, byref(valueLen))
-    MSPAssert(errorCode)
+    errorCode: int = msc.QISEGetParam(
+        sessionID, paramName, paramValue, byref(valueLen))
+    MSPAssert(errorCode, "QISEGetParam failed")
     return paramValue.value.decode("UTF-8") if paramValue else None, valueLen.value

@@ -76,8 +76,9 @@ def QIVWSessionBegin(grammarList: str, params: str) -> str:
     grammarList = grammarList.encode("UTF-8") if grammarList else None
     params = params.encode("UTF-8") if params else None
     errorCode = c_int()
-    sessionID: bytes = msc.QIVWSessionBegin(grammarList, params, byref(errorCode))
-    MSPAssert(errorCode.value)
+    sessionID: bytes = msc.QIVWSessionBegin(
+        grammarList, params, byref(errorCode))
+    MSPAssert(errorCode.value, "QIVWSessionBegin failed")
     return sessionID.decode("UTF-8") if sessionID else None
 
 
@@ -85,7 +86,7 @@ def QIVWSessionEnd(sessionID: str, hints: str):
     sessionID = sessionID.encode("UTF-8") if sessionID else None
     hints = hints.encode("UTF-8") if hints else None
     errorCode: int = msc.QIVWSessionEnd(sessionID, hints)
-    MSPAssert(errorCode)
+    MSPAssert(errorCode, "QIVWSessionEnd failed")
 
 
 def QIVWAudioWrite(sessionID: str, audioData: bytes, audioStatus: int):
@@ -93,13 +94,13 @@ def QIVWAudioWrite(sessionID: str, audioData: bytes, audioStatus: int):
     errorCode: int = msc.QIVWAudioWrite(
         sessionID, audioData, len(audioData), audioStatus
     )
-    MSPAssert(errorCode)
+    MSPAssert(errorCode, "QIVWAudioWrite failed")
 
 
 def QIVWRegisterNotify(sessionID: str, msgProcCb: CFuncPtr, userData: bytes):
     sessionID = sessionID.encode("UTF-8") if sessionID else None
     errorCode: int = msc.QIVWRegisterNotify(sessionID, msgProcCb, userData)
-    MSPAssert(errorCode)
+    MSPAssert(errorCode, "QIVWRegisterNotify failed")
 
 
 def QIVWGetResInfo(resPath: str, params: str) -> Tuple[str, int]:
@@ -107,6 +108,7 @@ def QIVWGetResInfo(resPath: str, params: str) -> Tuple[str, int]:
     params = params.encode("UTF-8") if params else None
     infoLen = c_uint()
     resInfo = c_char_p()
-    errorCode: int = msc.QIVWGetResInfo(resPath, resInfo, byref(infoLen), params)
-    MSPAssert(errorCode)
+    errorCode: int = msc.QIVWGetResInfo(
+        resPath, resInfo, byref(infoLen), params)
+    MSPAssert(errorCode, "QIVWGetResInfo failed")
     return resInfo.value.decode("UTF-8"), infoLen.value

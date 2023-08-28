@@ -218,7 +218,8 @@ msc.QTTSSessionBegin.restype = c_char_p
 msc.QTTSTextPut.argtypes = [c_char_p, c_char_p, c_uint, c_char_p]
 msc.QTTSTextPut.restype = c_int
 
-msc.QTTSAudioGet.argtypes = [c_char_p, POINTER(c_uint), POINTER(c_int), POINTER(c_int)]
+msc.QTTSAudioGet.argtypes = [c_char_p, POINTER(
+    c_uint), POINTER(c_int), POINTER(c_int)]
 msc.QTTSAudioGet.restype = c_void_p
 
 msc.QTTSAudioInfo.argtypes = [c_char_p]
@@ -254,7 +255,7 @@ def QTTSSessionBegin(params: str) -> str:
     params = params.encode("UTF-8") if params else None
     errorCode = c_int()
     sessionID: bytes = msc.QTTSSessionBegin(params, byref(errorCode))
-    MSPAssert(errorCode.value)
+    MSPAssert(errorCode.value, "QTTSSessionBegin failed")
     return sessionID.decode("UTF-8") if sessionID else None
 
 
@@ -264,7 +265,7 @@ def QTTSTextPut(sessionID: str, textString: str, params: str):
     params = params.encode("UTF-8") if params else None
     textLen = len(textString)
     errorCode: int = msc.QTTSTextPut(sessionID, textString, textLen, params)
-    MSPAssert(errorCode)
+    MSPAssert(errorCode, "QTTSTextPut failed")
 
 
 def QTTSAudioGet(sessionID: str) -> Tuple[bytes, int]:
@@ -275,7 +276,7 @@ def QTTSAudioGet(sessionID: str) -> Tuple[bytes, int]:
     audioData: c_void_p = msc.QTTSAudioGet(
         sessionID, byref(audioLen), byref(synthStatus), byref(errorCode)
     )
-    MSPAssert(errorCode.value)
+    MSPAssert(errorCode.value, "QTTSAudioGet failed")
     return string_at(audioData, audioLen.value), synthStatus.value
 
 
@@ -289,7 +290,7 @@ def QTTSSessionEnd(sessionID: str, hints: str):
     sessionID = sessionID.encode("UTF-8") if sessionID else None
     hints = hints.encode("UTF-8") if hints else None
     errorCode: int = msc.QTTSSessionEnd(sessionID, hints)
-    MSPAssert(errorCode)
+    MSPAssert(errorCode, "QTTSSessionEnd failed")
 
 
 def QTTSGetParam(sessionID: str, paramName: str) -> Tuple[str, int]:
@@ -297,8 +298,9 @@ def QTTSGetParam(sessionID: str, paramName: str) -> Tuple[str, int]:
     paramName = paramName.encode("UTF-8") if paramName else None
     valueLen = c_uint()
     paramValue = c_char_p()
-    errorCode: int = msc.QTTSGetParam(sessionID, paramName, paramValue, byref(valueLen))
-    MSPAssert(errorCode)
+    errorCode: int = msc.QTTSGetParam(
+        sessionID, paramName, paramValue, byref(valueLen))
+    MSPAssert(errorCode, "QTTSGetParam failed")
     return paramValue.value.decode("UTF-8"), valueLen.value
 
 
@@ -307,7 +309,7 @@ def QTTSSetParam(sessionID: str, paramName: str, paramValue: str):
     paramName = paramName.encode("UTF-8") if paramName else None
     paramValue = paramValue.encode("UTF-8") if paramValue else None
     errorCode: int = msc.QTTSSetParam(sessionID, paramName, paramValue)
-    MSPAssert(errorCode)
+    MSPAssert(errorCode, "QTTSSetParam failed")
 
 
 def QTTSRegisterNotify(
@@ -321,4 +323,4 @@ def QTTSRegisterNotify(
     errorCode: int = msc.QTTSRegisterNotify(
         sessionID, rsltCb, statusCb, errCb, userData
     )
-    MSPAssert(errorCode)
+    MSPAssert(errorCode, "QTTSRegisterNotify failed")
