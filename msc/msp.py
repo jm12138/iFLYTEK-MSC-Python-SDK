@@ -3,11 +3,17 @@ from ctypes import byref, string_at
 from ctypes import CFUNCTYPE, POINTER
 from ctypes import c_int, c_long, c_uint, c_void_p, c_char_p
 
+from typing import Tuple
+
 from enum import Enum
 
 from .msc import msc
 
 __all__ = [
+    "DownloadStatusCB",
+    "UploadStatusCB",
+    "NLPSearchCB",
+    "msp_status_ntf_handler",
     "MSPStatus",
     "MSPAssert",
     "MSPLogin",
@@ -1040,7 +1046,7 @@ def MSPAppendData(data: bytes, dataLen: int, dataStatus: int):
     MSPAssert(errorCode, "MSPAppendData failed")
 
 
-def MSPGetResult() -> str:
+def MSPGetResult() -> Tuple[str, int, int]:
     rsltLen = c_uint()
     rsltStatus = c_int()
     errorCode = c_int()
@@ -1048,7 +1054,7 @@ def MSPGetResult() -> str:
         byref(rsltLen), byref(rsltStatus), byref(errorCode)
     )
     MSPAssert(errorCode.value, "MSPGetResult failed")
-    return result.decode("UTF-8") if result else None
+    return result.decode("UTF-8") if result else None, rsltLen.value, rsltStatus.value
 
 
 def MSPSetParam(paramName: str, paramValue: str):
@@ -1058,13 +1064,16 @@ def MSPSetParam(paramName: str, paramValue: str):
     MSPAssert(errorCode, "MSPSetParam failed")
 
 
-def MSPGetParam(paramName: str) -> str:
+def MSPGetParam(paramName: str) -> Tuple[str, int]:
     paramName = paramName.encode("UTF-8") if paramName else None
     paramValue = c_char_p()
     valueLen = c_uint()
     errorCode: int = msc.MSPGetParam(paramName, paramValue, byref(valueLen))
     MSPAssert(errorCode, "MSPGetParam failed")
-    return paramValue.value.decode("UTF-8") if paramValue.value else None
+    return (
+        paramValue.value.decode("UTF-8") if paramValue.value else None,
+        valueLen.value,
+    )
 
 
 def MSPUploadData(dataName: str, data: bytes, dataLen: int, params: str):
@@ -1074,23 +1083,23 @@ def MSPUploadData(dataName: str, data: bytes, dataLen: int, params: str):
     MSPAssert(errorCode, "MSPUploadData failed")
 
 
-def MSPDownloadData(params: str) -> bytes:
+def MSPDownloadData(params: str) -> Tuple[bytes, int]:
     params = params.encode("UTF-8") if params else None
     dataLen = c_uint()
     errorCode = c_int()
     data: c_void_p = msc.MSPDownloadData(params, byref(dataLen), byref(errorCode))
     MSPAssert(errorCode.value, "MSPDownloadData failed")
-    return string_at(data, dataLen.value) if data else None
+    return string_at(data, dataLen.value) if data else None, dataLen.value
 
 
-def MSPSearch(params: str, text: str) -> str:
+def MSPSearch(params: str, text: str) -> Tuple[str, int]:
     params = params.encode("UTF-8") if params else None
     text = text.encode("UTF-8") if text else None
     dataLen = c_uint()
     errorCode = c_int()
     result: bytes = msc.MSPSearch(params, text, byref(dataLen), byref(errorCode))
     MSPAssert(errorCode.value, "MSPSearch failed")
-    return result.decode("UTF-8") if result else None
+    return result.decode("UTF-8") if result else None, dataLen.value
 
 
 def MSPNlpSearch(params: str, text: str, textLen: int) -> str:
