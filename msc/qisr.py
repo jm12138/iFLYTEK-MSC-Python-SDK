@@ -315,11 +315,11 @@ def QISRSessionBegin(grammarList: str, params: str) -> str:
 
 
 def QISRAudioWrite(
-    sessionID: str, waveData: bytes, waveLen: int, audioStatus: int
+    sessionID: str, waveData: bytes, audioStatus: int
 ) -> Tuple[int, int]:
     sessionID = sessionID.encode("UTF-8") if sessionID else None
     waveData = waveData
-    waveLen = waveLen
+    waveLen = len(waveData)
     epStatus = c_int()
     recogStatus = c_int()
     errorCode: int = msc.QISRAudioWrite(

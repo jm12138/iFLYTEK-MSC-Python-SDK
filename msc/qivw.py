@@ -64,7 +64,7 @@ msc.QIVWSessionEnd.restype = c_int
 msc.QIVWAudioWrite.argtypes = [c_char_p, c_void_p, c_uint, c_int]
 msc.QIVWAudioWrite.restype = c_int
 
-ivw_ntf_handler = CFUNCTYPE(c_int, c_char_p, c_int, c_int, c_void_p, c_void_p)
+ivw_ntf_handler = CFUNCTYPE(c_int, c_char_p, c_int, c_int, c_int, c_void_p, c_void_p)
 msc.QIVWRegisterNotify.argtypes = [c_char_p, ivw_ntf_handler, c_void_p]
 msc.QIVWRegisterNotify.restype = c_int
 
