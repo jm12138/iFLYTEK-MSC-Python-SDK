@@ -161,3 +161,10 @@ cython_debug/
 
 # VS Code
 .vscode/
+
+# MSC
+msc/msc.cfg
+kivw.dat
+u.data
+*.jet
+include/
