@@ -1,12 +1,15 @@
 from .msc import msc
 
-from .msp import MSPStatus, MSPAssert
+from .msp import MSPStatus, MSPAudioSampleStatus
+from .msp import MSPRECStatus, MSPEPStatus
+from .msp import MSPTTSFlags, MSPHCRDataFlags
+from .msp import MSPIVWMSGFlags, MSPDATASampleFlags
 from .msp import MSPLogin, MSPLogout
 from .msp import MSPSetParam, MSPGetParam
 from .msp import MSPUploadData, MSPDownloadData
 from .msp import MSPSearch, MSPNlpSearch
 from .msp import MSPNlpSchCancel, MSPRegisterNotify
-from .msp import MSPGetVersion
+from .msp import MSPGetVersion, MSPAssert
 
 from .qisr import recog_result_ntf_handler
 from .qisr import recog_status_ntf_handler
@@ -37,6 +40,13 @@ from .qtts import QTTSGetParam, QTTSSetParam, QTTSRegisterNotify
 __all__ = [
     "msc",
     "MSPStatus",
+    "MSPAudioSampleStatus",
+    "MSPRECStatus",
+    "MSPEPStatus",
+    "MSPTTSFlags",
+    "MSPHCRDataFlags",
+    "MSPIVWMSGFlags",
+    "MSPDATASampleFlags",
     "MSPAssert",
     "MSPLogin",
     "MSPLogout",

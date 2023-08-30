@@ -76,8 +76,7 @@ def QIVWSessionBegin(grammarList: str, params: str) -> str:
     grammarList = grammarList.encode("UTF-8") if grammarList else None
     params = params.encode("UTF-8") if params else None
     errorCode = c_int()
-    sessionID: bytes = msc.QIVWSessionBegin(
-        grammarList, params, byref(errorCode))
+    sessionID: bytes = msc.QIVWSessionBegin(grammarList, params, byref(errorCode))
     MSPAssert(errorCode.value, "QIVWSessionBegin failed")
     return sessionID.decode("UTF-8") if sessionID else None
 
@@ -108,7 +107,6 @@ def QIVWGetResInfo(resPath: str, params: str) -> Tuple[str, int]:
     params = params.encode("UTF-8") if params else None
     infoLen = c_uint()
     resInfo = c_char_p()
-    errorCode: int = msc.QIVWGetResInfo(
-        resPath, resInfo, byref(infoLen), params)
+    errorCode: int = msc.QIVWGetResInfo(resPath, resInfo, byref(infoLen), params)
     MSPAssert(errorCode, "QIVWGetResInfo failed")
     return resInfo.value.decode("UTF-8"), infoLen.value

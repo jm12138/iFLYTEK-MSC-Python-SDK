@@ -15,6 +15,13 @@ __all__ = [
     "NLPSearchCB",
     "msp_status_ntf_handler",
     "MSPStatus",
+    "MSPAudioSampleStatus",
+    "MSPRECStatus",
+    "MSPEPStatus",
+    "MSPTTSFlags",
+    "MSPHCRDataFlags",
+    "MSPIVWMSGFlags",
+    "MSPDATASampleFlags",
     "MSPAssert",
     "MSPLogin",
     "MSPLogout",
@@ -459,29 +466,29 @@ class MSPStatus(Enum):
     # /* Error codes of Face * /
 
     MSP_ERROR_IFR_NOT_FACE_IMAGE = 11700
-    #	【无人脸，对应的引擎错误码是20200 】
+    # 	【无人脸，对应的引擎错误码是20200 】
     MSP_ERROR_FACE_IMAGE_FULL_LEFT = 11701
-    #	【人脸向左，对应的引擎错误码是20201】
+    # 	【人脸向左，对应的引擎错误码是20201】
     MSP_ERROR_FACE_IMAGE_FULL_RIGHT = 11702
-    #	【人脸向右，对应的引擎错误码是20202】
+    # 	【人脸向右，对应的引擎错误码是20202】
     MSP_ERROR_IMAGE_CLOCKWISE_WHIRL = 11703
-    #	【顺时针旋转，对应的引擎错误码是20203】
+    # 	【顺时针旋转，对应的引擎错误码是20203】
     MSP_ERROR_IMAGE_COUNTET_CLOCKWISE_WHIRL = 11704
-    #	【逆时针旋转，对应的引擎错误码是20204】
+    # 	【逆时针旋转，对应的引擎错误码是20204】
     MSP_ERROR_VALID_IMAGE_SIZE = 11705
-    #	【图片大小异常 ，对应的引擎错误码是20205】
+    # 	【图片大小异常 ，对应的引擎错误码是20205】
     MSP_ERROR_ILLUMINATION = 11706
-    #	【光照异常，对应的引擎错误码是20206】
+    # 	【光照异常，对应的引擎错误码是20206】
     MSP_ERROR_FACE_OCCULTATION = 11707
     # 【人脸被遮挡，对应的引擎错误码是20207】
     MSP_ERROR_FACE_INVALID_MODEL = 11708
-    #	【非法模型数据，对应的引擎错误码是20208】
+    # 	【非法模型数据，对应的引擎错误码是20208】
     MSP_ERROR_FUSION_INVALID_INPUT_TYPE = 11709
-    #	【输入数据类型非法，对应的引擎错误码是20300】
+    # 	【输入数据类型非法，对应的引擎错误码是20300】
     MSP_ERROR_FUSION_NO_ENOUGH_DATA = 11710
-    #	【输入的数据不完整，对应的引擎错误码是20301】
+    # 	【输入的数据不完整，对应的引擎错误码是20301】
     MSP_ERROR_FUSION_ENOUGH_DATA = 11711
-    #	【输入的数据过多，对应的引擎错误码是20302】
+    # 	【输入的数据过多，对应的引擎错误码是20302】
 
     # /*Error Codes of AIUI*/
     MSP_ERROR_AIUI_CID_EXPIRED = 11800
@@ -949,6 +956,115 @@ class MSPStatus(Enum):
 
 
 """
+ *  MSPSampleStatus indicates how the sample buffer should be handled
+ *  MSP_AUDIO_SAMPLE_FIRST		- The sample buffer is the start of audio
+ *								  If recognizer was already recognizing, it will discard
+ *								  audio received to date and re-start the recognition
+ *  MSP_AUDIO_SAMPLE_CONTINUE	- The sample buffer is continuing audio
+ *  MSP_AUDIO_SAMPLE_LAST		- The sample buffer is the end of audio
+ *								  The recognizer will cease processing audio and
+ *								  return results
+ *  Note that sample statii can be combined; for example, for file-based input
+ *  the entire file can be written with SAMPLE_FIRST | SAMPLE_LAST as the
+ *  status.
+ *  Other flags may be added in future to indicate other special audio
+ *  conditions such as the presence of AGC
+"""
+
+
+class MSPAudioSampleStatus(Enum):
+    MSP_AUDIO_SAMPLE_INIT = 0x00
+    MSP_AUDIO_SAMPLE_FIRST = 0x01
+    MSP_AUDIO_SAMPLE_CONTINUE = 0x02
+    MSP_AUDIO_SAMPLE_LAST = 0x04
+
+
+"""
+ *  The enumeration MSPRecognizerStatus contains the recognition status
+ *  MSP_REC_STATUS_SUCCESS				- successful recognition with partial results
+ *  MSP_REC_STATUS_NO_MATCH				- recognition rejected
+ *  MSP_REC_STATUS_INCOMPLETE			- recognizer needs more time to compute results
+ *  MSP_REC_STATUS_NON_SPEECH_DETECTED	- discard status, no more in use
+ *  MSP_REC_STATUS_SPEECH_DETECTED		- recognizer has detected audio, this is delayed status
+ *  MSP_REC_STATUS_COMPLETE				- recognizer has return all result
+ *  MSP_REC_STATUS_MAX_CPU_TIME			- CPU time limit exceeded
+ *  MSP_REC_STATUS_MAX_SPEECH			- maximum speech length exceeded, partial results may be returned
+ *  MSP_REC_STATUS_STOPPED				- recognition was stopped
+ *  MSP_REC_STATUS_REJECTED				- recognizer rejected due to low confidence
+ *  MSP_REC_STATUS_NO_SPEECH_FOUND		- recognizer still found no audio, this is delayed status
+"""
+
+
+class MSPRECStatus(Enum):
+    MSP_REC_STATUS_SUCCESS = 0
+    MSP_REC_STATUS_NO_MATCH = 1
+    MSP_REC_STATUS_INCOMPLETE = 2
+    MSP_REC_STATUS_NON_SPEECH_DETECTED = 3
+    MSP_REC_STATUS_SPEECH_DETECTED = 4
+    MSP_REC_STATUS_COMPLETE = 5
+    MSP_REC_STATUS_MAX_CPU_TIME = 6
+    MSP_REC_STATUS_MAX_SPEECH = 7
+    MSP_REC_STATUS_STOPPED = 8
+    MSP_REC_STATUS_REJECTED = 9
+    MSP_REC_STATUS_NO_SPEECH_FOUND = 10
+    MSP_REC_STATUS_FAILURE = MSP_REC_STATUS_NO_MATCH
+
+
+"""
+ * The enumeration MSPepState contains the current endpointer state
+ *  MSP_EP_LOOKING_FOR_SPEECH	- Have not yet found the beginning of speech
+ *  MSP_EP_IN_SPEECH			- Have found the beginning, but not the end of speech
+ *  MSP_EP_AFTER_SPEECH			- Have found the beginning and end of speech
+ *  MSP_EP_TIMEOUT				- Have not found any audio till timeout
+ *  MSP_EP_ERROR				- The endpointer has encountered a serious error
+ *  MSP_EP_MAX_SPEECH			- Have arrive the max size of speech
+"""
+
+
+class MSPEPStatus(Enum):
+    MSP_EP_LOOKING_FOR_SPEECH = 0
+    MSP_EP_IN_SPEECH = 1
+    MSP_EP_AFTER_SPEECH = 3
+    MSP_EP_TIMEOUT = 4
+    MSP_EP_ERROR = 5
+    MSP_EP_MAX_SPEECH = 6
+    MSP_EP_IDLE = 7  # internal state after stop and before start
+
+
+# Synthesizing process flags */
+class MSPTTSFlags(Enum):
+    MSP_TTS_FLAG_STILL_HAVE_DATA = 1
+    MSP_TTS_FLAG_DATA_END = 2
+    MSP_TTS_FLAG_CMD_CANCELED = 4
+
+
+# Handwriting process flags */
+class MSPHCRDataFlags(Enum):
+    MSP_HCR_DATA_FIRST = 1
+    MSP_HCR_DATA_CONTINUE = 2
+    MSP_HCR_DATA_END = 4
+
+
+# ivw message type */
+class MSPIVWMSGFlags(Enum):
+    MSP_IVW_MSG_WAKEUP = 1
+    MSP_IVW_MSG_ERROR = 2
+    MSP_IVW_MSG_ISR_RESULT = 3
+    MSP_IVW_MSG_ISR_EPS = 4
+    MSP_IVW_MSG_VOLUME = 5
+    MSP_IVW_MSG_ENROLL = 6
+    MSP_IVW_MSG_RESET = 7
+
+
+# Upload data process flags */
+class MSPDATASampleFlags(Enum):
+    MSP_DATA_SAMPLE_INIT = 0x00
+    MSP_DATA_SAMPLE_FIRST = 0x01
+    MSP_DATA_SAMPLE_CONTINUE = 0x02
+    MSP_DATA_SAMPLE_LAST = 0x04
+
+
+"""
 /**
  * @file    msp_cmn.h
  * @brief   Mobile Speech Platform Common Interface Header File
@@ -1245,8 +1361,7 @@ msc.MSPSetParam.restype = c_int
 msc.MSPGetParam.argtypes = [c_char_p, c_char_p, POINTER(c_uint)]
 msc.MSPGetParam.restype = c_int
 
-msc.MSPUploadData.argtypes = [
-    c_char_p, c_void_p, c_uint, c_char_p, POINTER(c_int)]
+msc.MSPUploadData.argtypes = [c_char_p, c_void_p, c_uint, c_char_p, POINTER(c_int)]
 msc.MSPUploadData.restype = c_char_p
 
 msc.MSPDownloadData.argtypes = [c_char_p, POINTER(c_uint), POINTER(c_int)]
@@ -1255,8 +1370,7 @@ msc.MSPDownloadData.restype = c_void_p
 msc.MSPSearch.argtypes = [c_char_p, c_char_p, POINTER(c_uint), POINTER(c_int)]
 msc.MSPSearch.restype = c_char_p
 
-NLPSearchCB = CFUNCTYPE(c_int, c_char_p, c_int, c_int,
-                        c_void_p, c_long, c_void_p)
+NLPSearchCB = CFUNCTYPE(c_int, c_char_p, c_int, c_int, c_void_p, c_long, c_void_p)
 msc.MSPNlpSearch.argtypes = [
     c_char_p,
     c_char_p,
@@ -1270,8 +1384,7 @@ msc.MSPNlpSearch.restype = c_char_p
 msc.MSPNlpSchCancel.argtypes = [c_char_p, c_char_p]
 msc.MSPNlpSchCancel.restype = c_int
 
-msp_status_ntf_handler = CFUNCTYPE(
-    None, c_int, c_int, c_int, c_void_p, c_void_p)
+msp_status_ntf_handler = CFUNCTYPE(None, c_int, c_int, c_int, c_void_p, c_void_p)
 msc.MSPRegisterNotify.argtypes = [msp_status_ntf_handler, c_void_p]
 msc.MSPRegisterNotify.restype = c_int
 
@@ -1280,7 +1393,9 @@ msc.MSPGetVersion.restype = c_char_p
 
 
 def MSPAssert(errorCode: int, errorMsg: str):
-    assert errorCode == MSPStatus.MSP_SUCCESS.value, "%s, error code: %d, error name: %s" % (
+    assert (
+        errorCode == MSPStatus.MSP_SUCCESS.value
+    ), "%s, error code: %d, error name: %s" % (
         errorMsg,
         errorCode,
         MSPStatus(errorCode).name,
@@ -1330,8 +1445,7 @@ def MSPDownloadData(params: str) -> Tuple[bytes, int]:
     params = params.encode("UTF-8") if params else None
     dataLen = c_uint()
     errorCode = c_int()
-    data: c_void_p = msc.MSPDownloadData(
-        params, byref(dataLen), byref(errorCode))
+    data: c_void_p = msc.MSPDownloadData(params, byref(dataLen), byref(errorCode))
     MSPAssert(errorCode.value, "MSPDownloadData failed")
     return string_at(data, dataLen.value) if data else None, dataLen.value
 
@@ -1341,8 +1455,7 @@ def MSPSearch(params: str, text: str) -> Tuple[str, int]:
     text = text.encode("UTF-8") if text else None
     dataLen = c_uint()
     errorCode = c_int()
-    result: bytes = msc.MSPSearch(
-        params, text, byref(dataLen), byref(errorCode))
+    result: bytes = msc.MSPSearch(params, text, byref(dataLen), byref(errorCode))
     MSPAssert(errorCode.value, "MSPSearch failed")
     return result.decode("UTF-8") if result else None, dataLen.value
 

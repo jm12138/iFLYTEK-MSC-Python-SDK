@@ -218,8 +218,7 @@ msc.QTTSSessionBegin.restype = c_char_p
 msc.QTTSTextPut.argtypes = [c_char_p, c_char_p, c_uint, c_char_p]
 msc.QTTSTextPut.restype = c_int
 
-msc.QTTSAudioGet.argtypes = [c_char_p, POINTER(
-    c_uint), POINTER(c_int), POINTER(c_int)]
+msc.QTTSAudioGet.argtypes = [c_char_p, POINTER(c_uint), POINTER(c_int), POINTER(c_int)]
 msc.QTTSAudioGet.restype = c_void_p
 
 msc.QTTSAudioInfo.argtypes = [c_char_p]
@@ -298,8 +297,7 @@ def QTTSGetParam(sessionID: str, paramName: str) -> Tuple[str, int]:
     paramName = paramName.encode("UTF-8") if paramName else None
     valueLen = c_uint()
     paramValue = c_char_p()
-    errorCode: int = msc.QTTSGetParam(
-        sessionID, paramName, paramValue, byref(valueLen))
+    errorCode: int = msc.QTTSGetParam(sessionID, paramName, paramValue, byref(valueLen))
     MSPAssert(errorCode, "QTTSGetParam failed")
     return paramValue.value.decode("UTF-8"), valueLen.value
 
