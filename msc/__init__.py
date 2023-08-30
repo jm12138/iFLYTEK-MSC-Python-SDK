@@ -38,6 +38,7 @@ from .qtts import QTTSGetParam, QTTSSetParam, QTTSRegisterNotify
 
 
 __all__ = [
+    "__version__",
     "msc",
     "MSPStatus",
     "MSPAudioSampleStatus",
@@ -99,3 +100,6 @@ __all__ = [
     "QTTSSetParam",
     "QTTSRegisterNotify",
 ]
+
+
+__version__ = "0.1.0"
