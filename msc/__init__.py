@@ -39,6 +39,7 @@ from .qtts import QTTSGetParam, QTTSSetParam, QTTSRegisterNotify
 
 
 __all__ = [
+    "__version__",
     "msc",
     "MSPStatus",
     "MSPAudioSampleStatus",
@@ -321,3 +322,5 @@ class MSC:
 
     def __del__(self) -> None:
         MSPLogout()
+
+__version__ = "0.1.0"
