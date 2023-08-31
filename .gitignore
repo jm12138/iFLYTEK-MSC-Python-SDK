@@ -164,7 +164,7 @@ cython_debug/
 
 # MSC
 msc/msc.cfg
-kivw.dat
-u.data
+*.dat
+*.data
 *.jet
 include/
