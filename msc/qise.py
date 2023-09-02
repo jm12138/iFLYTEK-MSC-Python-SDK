@@ -264,19 +264,21 @@ def QISESessionBegin(params: str, userModelId: str) -> str:
     return sessionID.decode("UTF-8") if sessionID else None
 
 
-def QISETextPut(sessionID: str, textString: str, textLen: int, params: str):
+def QISETextPut(sessionID: str, textString: str, params: str):
     sessionID = sessionID.encode("UTF-8") if sessionID else None
     textString = textString.encode("UTF-8") if textString else None
+    textLen = len(textString)
     params = params.encode("UTF-8") if params else None
     errorCode: int = msc.QISETextPut(sessionID, textString, textLen, params)
     MSPAssert(errorCode, "QISETextPut failed")
 
 
 def QISEAudioWrite(
-    sessionID: str, waveData: bytes, waveLen: int, audioStatus: int
+    sessionID: str, waveData: bytes, audioStatus: int
 ) -> Tuple[int, int]:
     sessionID = sessionID.encode("UTF-8") if sessionID else None
     waveData = waveData if waveData else None
+    waveLen = len(waveData)
     epStatus = c_int()
     recogStatus = c_int()
     errorCode: int = msc.QISEAudioWrite(
@@ -286,7 +288,7 @@ def QISEAudioWrite(
     return epStatus.value, recogStatus.value
 
 
-def QISEGetResult(sessionID: str) -> Tuple[str, int, int]:
+def QISEGetResult(sessionID: str) -> Tuple[str, int]:
     sessionID = sessionID.encode("UTF-8") if sessionID else None
     rsltLen = c_uint()
     rsltStatus = c_int()
@@ -295,7 +297,7 @@ def QISEGetResult(sessionID: str) -> Tuple[str, int, int]:
         sessionID, byref(rsltLen), byref(rsltStatus), byref(errorCode)
     )
     MSPAssert(errorCode.value, "QISEGetResult failed")
-    return result.decode("UTF-8") if result else None, rsltLen.value, rsltStatus.value
+    return result.decode("UTF-8") if result else None, rsltStatus.value
 
 
 def QISEResultInfo(sessionID: str) -> str:
