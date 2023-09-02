@@ -2,6 +2,7 @@ import json
 
 from typing import Callable
 from ctypes import c_void_p
+from threading import Event
 
 from pyaudio import Stream
 
@@ -205,24 +206,34 @@ class MSC:
         stream: Stream,
         chunk_size: int = 2048,
         user_data=None,
+        stop_event: Event = None
     ):
+        # Session Begin
         sessionID = QIVWSessionBegin(grammarList=None, params=params)
+
+        # Register Notify
         msgProcCb = ivw_ntf_handler(message_callback)
         QIVWRegisterNotify(sessionID=sessionID,
                            msgProcCb=msgProcCb, userData=user_data)
+
+        # Audio Write
         audioData = stream.read(chunk_size)
         QIVWAudioWrite(
             sessionID=sessionID,
             audioData=audioData,
             audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_FIRST.value,
         )
-        while True:
+
+        while not stop_event.is_set():
+            # Audio Write
             audioData = stream.read(chunk_size)
             QIVWAudioWrite(
                 sessionID=sessionID,
                 audioData=audioData,
                 audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_CONTINUE.value,
             )
+
+        # Audio Write
         audioData = stream.read(chunk_size)
         QIVWAudioWrite(
             sessionID=sessionID,
