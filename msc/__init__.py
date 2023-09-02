@@ -1,4 +1,10 @@
-from typing import Any
+import json
+
+from typing import Callable
+from ctypes import c_void_p
+
+from pyaudio import Stream
+
 from .msc import msc
 
 from .msp import MSPStatus, MSPAudioSampleStatus
@@ -40,6 +46,7 @@ from .qtts import QTTSGetParam, QTTSSetParam, QTTSRegisterNotify
 
 __all__ = [
     "__version__",
+    "MSC",
     "msc",
     "MSPStatus",
     "MSPAudioSampleStatus",
@@ -102,99 +109,6 @@ __all__ = [
     "QTTSRegisterNotify",
 ]
 
-import json
-from pyaudio import Stream
-from typing import Callable
-from ctypes import c_void_p
-
-
-class ASR:
-    def __init__(self, params: str, chunk_size: int = 2048) -> None:
-        self.params = params
-        self.CHUNK = chunk_size
-
-    def __call__(self, stream: Stream):
-        # Session Begin
-        sessionID = QISRSessionBegin(grammarList=None, params=self.params)
-
-        # Audio Write
-        waveData = stream.read(self.CHUNK)
-        epStatus, recogStatus = QISRAudioWrite(
-            sessionID=sessionID,
-            waveData=waveData,
-            audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_FIRST.value,
-        )
-
-        results = []
-        while True:
-            if epStatus != MSPEPStatus.MSP_EP_AFTER_SPEECH.value:
-                # Audio Write
-                waveData = stream.read(self.CHUNK)
-                epStatus, recogStatus = QISRAudioWrite(
-                    sessionID=sessionID,
-                    waveData=waveData,
-                    audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_CONTINUE.value,
-                )
-                print(epStatus, recogStatus)
-            else:
-                # Audio Write
-                waveData = stream.read(self.CHUNK)
-                epStatus, recogStatus = QISRAudioWrite(
-                    sessionID=sessionID,
-                    waveData=waveData,
-                    audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_LAST.value,
-                )
-                print(epStatus, recogStatus)
-            if recogStatus == MSPRECStatus.MSP_REC_STATUS_SUCCESS.value:
-                # Get Result
-                result, rsltStatus = QISRGetResult(sessionID, waitTime=1000)
-
-                if result:
-                    result = json.loads(result)
-
-                    if result["pgs"] == "apd":
-                        # Append
-                        text = ""
-                        for item in result["ws"]:
-                            text += item["cw"][0]["w"]
-                        results.append(text)
-                    else:
-                        # Replace
-                        text = ""
-                        for item in result["ws"]:
-                            text += item["cw"][0]["w"]
-                        start, end = result["rg"]
-                        start -= 1
-                        end -= 1
-                        results[start] = text
-                        results.append("")
-                        for i in range(start + 1, end + 1):
-                            results[i] = ""
-
-                    # Yield Result
-                    yield "".join(results)
-
-                if rsltStatus == MSPRECStatus.MSP_REC_STATUS_COMPLETE.value:
-                    # Session End
-                    QISRSessionEnd(sessionID, "Normal End.")
-                    break
-
-
-class TTS:
-    def __init__(self, params, chunk_size=2048):
-        self.params = params
-        self.CHUNK = chunk_size
-
-    def __call__(self, text: str):
-        sessionID = QTTSSessionBegin(params=self.params)
-        QTTSTextPut(sessionID=sessionID, textString=text, params=None)
-        while True:
-            audioData, synthStatus = QTTSAudioGet(sessionID)
-            yield audioData
-            if synthStatus == MSPTTSFlags.MSP_TTS_FLAG_DATA_END.value:
-                QTTSSessionEnd(sessionID, "Normal End.")
-                break
-
 
 class MSC:
     def __init__(self, params: str) -> None:
@@ -222,7 +136,6 @@ class MSC:
                     waveData=waveData,
                     audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_CONTINUE.value,
                 )
-                print(epStatus, recogStatus)
             else:
                 # Audio Write
                 waveData = stream.read(chunk_size)
@@ -231,7 +144,6 @@ class MSC:
                     waveData=waveData,
                     audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_LAST.value,
                 )
-                print(epStatus, recogStatus)
             if recogStatus == MSPRECStatus.MSP_REC_STATUS_SUCCESS.value:
                 # Get Result
                 result, rsltStatus = QISRGetResult(sessionID, waitTime=1000)
@@ -296,7 +208,8 @@ class MSC:
     ):
         sessionID = QIVWSessionBegin(grammarList=None, params=params)
         msgProcCb = ivw_ntf_handler(message_callback)
-        QIVWRegisterNotify(sessionID=sessionID, msgProcCb=msgProcCb, userData=user_data)
+        QIVWRegisterNotify(sessionID=sessionID,
+                           msgProcCb=msgProcCb, userData=user_data)
         audioData = stream.read(chunk_size)
         QIVWAudioWrite(
             sessionID=sessionID,
@@ -317,10 +230,57 @@ class MSC:
             audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_LAST.value,
         )
 
-    def ase():
-        pass
+    @staticmethod
+    def ase(params: str, text: str, stream: Stream, chunk_size: int = 2048):
+        # Session Begin
+        sessionID = QISESessionBegin(params=params, userModelId=None)
+
+        QISETextPut(
+            sessionID=sessionID,
+            textString=text,
+            params=None
+        )
+
+        # Audio Write
+        waveData = stream.read(chunk_size)
+        epStatus, recogStatus = QISEAudioWrite(
+            sessionID=sessionID,
+            waveData=waveData,
+            audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_FIRST.value,
+        )
+
+        while True:
+            if epStatus != MSPEPStatus.MSP_EP_AFTER_SPEECH.value:
+                # Audio Write
+                waveData = stream.read(chunk_size)
+                epStatus, recogStatus = QISEAudioWrite(
+                    sessionID=sessionID,
+                    waveData=waveData,
+                    audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_CONTINUE.value,
+                )
+            else:
+                # Audio Write
+                waveData = stream.read(chunk_size)
+                epStatus, recogStatus = QISEAudioWrite(
+                    sessionID=sessionID,
+                    waveData=waveData,
+                    audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_LAST.value,
+                )
+            if recogStatus == MSPRECStatus.MSP_REC_STATUS_SUCCESS.value:
+                # Get Result
+                result, rsltStatus = QISEGetResult(sessionID)
+
+                if result:
+                    # Yield Result
+                    yield result
+
+                if rsltStatus == MSPRECStatus.MSP_REC_STATUS_COMPLETE.value:
+                    # Session End
+                    QISESessionEnd(sessionID, "Normal End.")
+                    break
 
     def __del__(self) -> None:
         MSPLogout()
+
 
 __version__ = "0.1.0"
