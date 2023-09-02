@@ -8,8 +8,6 @@ from ctypes import POINTER
 from ctypes import byref, string_at
 from ctypes import c_int, c_uint, c_void_p, c_char_p
 
-from enum import Enum
-
 
 def LoadLibrary(
     file_name: str, base_dir: str = os.path.dirname(os.path.abspath(__file__))
@@ -44,7 +42,7 @@ def LoadMSC() -> CDLL:
 msc = LoadMSC()
 
 
-class MSPStatus(Enum):
+class MSPStatus:
     MSP_SUCCESS = 0
     MSP_ERROR_FAIL = -1
     MSP_ERROR_EXCEPTION = -2
@@ -979,7 +977,7 @@ class MSPStatus(Enum):
 """
 
 
-class MSPAudioSampleStatus(Enum):
+class MSPAudioSampleStatus:
     MSP_AUDIO_SAMPLE_INIT = 0x00
     MSP_AUDIO_SAMPLE_FIRST = 0x01
     MSP_AUDIO_SAMPLE_CONTINUE = 0x02
@@ -1002,7 +1000,7 @@ class MSPAudioSampleStatus(Enum):
 """
 
 
-class MSPRECStatus(Enum):
+class MSPRECStatus:
     MSP_REC_STATUS_SUCCESS = 0
     MSP_REC_STATUS_NO_MATCH = 1
     MSP_REC_STATUS_INCOMPLETE = 2
@@ -1028,7 +1026,7 @@ class MSPRECStatus(Enum):
 """
 
 
-class MSPEPStatus(Enum):
+class MSPEPStatus:
     MSP_EP_LOOKING_FOR_SPEECH = 0
     MSP_EP_IN_SPEECH = 1
     MSP_EP_AFTER_SPEECH = 3
@@ -1039,21 +1037,21 @@ class MSPEPStatus(Enum):
 
 
 # Synthesizing process Status
-class MSPTTSStatus(Enum):
+class MSPTTSStatus:
     MSP_TTS_FLAG_STILL_HAVE_DATA = 1
     MSP_TTS_FLAG_DATA_END = 2
     MSP_TTS_FLAG_CMD_CANCELED = 4
 
 
 # Handwriting process Status
-class MSPHCRDataStatus(Enum):
+class MSPHCRDataStatus:
     MSP_HCR_DATA_FIRST = 1
     MSP_HCR_DATA_CONTINUE = 2
     MSP_HCR_DATA_END = 4
 
 
 # ivw message type
-class MSPIVWMSGStatus(Enum):
+class MSPIVWMSGStatus:
     MSP_IVW_MSG_WAKEUP = 1
     MSP_IVW_MSG_ERROR = 2
     MSP_IVW_MSG_ISR_RESULT = 3
@@ -1064,7 +1062,7 @@ class MSPIVWMSGStatus(Enum):
 
 
 # Upload data process Status
-class MSPDATASampleStatus(Enum):
+class MSPDATASampleStatus:
     MSP_DATA_SAMPLE_INIT = 0x00
     MSP_DATA_SAMPLE_FIRST = 0x01
     MSP_DATA_SAMPLE_CONTINUE = 0x02
@@ -1073,7 +1071,7 @@ class MSPDATASampleStatus(Enum):
 
 def MSPAssert(errorCode: int, errorMsg: str):
     assert (
-        errorCode == MSPStatus.MSP_SUCCESS.value
+        errorCode == MSPStatus.MSP_SUCCESS
     ), "%s, error code: %d, error name: %s" % (
         errorMsg,
         errorCode,
