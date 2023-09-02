@@ -115,6 +115,7 @@ class MSC:
     def __init__(self, params: str) -> None:
         MSPLogin(usr=None, pwd=None, params=params)
 
+    @staticmethod
     def asr(params: str, stream: Stream, chunk_size: int = 2048):
         # Session Begin
         sessionID = QISRSessionBegin(grammarList=None, params=params)
