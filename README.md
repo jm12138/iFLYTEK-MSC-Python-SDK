@@ -180,7 +180,7 @@ A third-party Python SDK for a iFLYTEK MSC. Using for ASR, TSS, KWS.
     # Set MSC Client
     client = msc.MSC(params=f"appid={appid}".encode("UTF-8"))
 
-    # Set Domain
+    # Set Text Encoding
     text_encoding = "UTF8"
 
     # Start TTS
