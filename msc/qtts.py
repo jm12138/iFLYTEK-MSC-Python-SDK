@@ -137,3 +137,12 @@ def QTTSGetParam(sessionID: bytes, paramName: bytes, paramValue: bytes) -> bytes
     errorCode: int = msc.QTTSGetParam(sessionID, paramName, paramValue, byref(valueLen))
     MSPAssert(errorCode, "QTTSGetParam failed")
     return string_at(paramValue, valueLen.value)
+
+
+__all__ = [
+    QTTSSessionBegin,
+    QTTSTextPut,
+    QTTSAudioGet,
+    QTTSSessionEnd,
+    QTTSGetParam,
+]
