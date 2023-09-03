@@ -6,109 +6,46 @@ from threading import Event
 
 from pyaudio import Stream
 
-from .msc import msc
-
-from .msp import MSPStatus, MSPAudioSampleStatus
-from .msp import MSPRECStatus, MSPEPStatus
-from .msp import MSPTTSFlags, MSPHCRDataFlags
-from .msp import MSPIVWMSGFlags, MSPDATASampleFlags
-from .msp import MSPLogin, MSPLogout
-from .msp import MSPSetParam, MSPGetParam
-from .msp import MSPUploadData, MSPDownloadData
-from .msp import MSPSearch, MSPNlpSearch
-from .msp import MSPNlpSchCancel, MSPRegisterNotify
-from .msp import MSPGetVersion, MSPAssert
-
-from .qisr import recog_result_ntf_handler
-from .qisr import recog_status_ntf_handler
-from .qisr import recog_error_ntf_handler
-from .qisr import GrammarCallBack, LexiconCallBack
-from .qisr import QISRSessionBegin, QISRSessionEnd
-from .qisr import QISRAudioWrite, QISRGetResult, QISRGetBinaryResult
-from .qisr import QISRGetParam, QISRSetParam, QISRRegisterNotify
-from .qisr import QISRBuildGrammar, QISRUpdateLexicon
-
-from .qise import QISESessionBegin, QISESessionEnd
-from .qise import QISETextPut, QISEAudioWrite, QISEGetResult
-from .qise import QISEResultInfo, QISEGetParam
-
-from .qivw import ivw_ntf_handler
-from .qivw import QIVWSessionBegin, QIVWSessionEnd
-from .qivw import QIVWAudioWrite, QIVWRegisterNotify
-from .qivw import QIVWGetResInfo
-
-from .qtts import tts_result_ntf_handler
-from .qtts import tts_status_ntf_handler
-from .qtts import tts_error_ntf_handler
-from .qtts import QTTSSessionBegin, QTTSSessionEnd
-from .qtts import QTTSTextPut, QTTSAudioGet, QTTSAudioInfo
-from .qtts import QTTSGetParam, QTTSSetParam, QTTSRegisterNotify
-
-
-__all__ = [
-    "__version__",
-    "MSC",
-    "msc",
-    "MSPStatus",
-    "MSPAudioSampleStatus",
-    "MSPRECStatus",
-    "MSPEPStatus",
-    "MSPTTSFlags",
-    "MSPHCRDataFlags",
-    "MSPIVWMSGFlags",
-    "MSPDATASampleFlags",
-    "MSPAssert",
-    "MSPLogin",
-    "MSPLogout",
-    "MSPSetParam",
-    "MSPGetParam",
-    "MSPUploadData",
-    "MSPDownloadData",
-    "MSPSearch",
-    "MSPNlpSearch",
-    "MSPNlpSchCancel",
-    "MSPRegisterNotify",
-    "MSPGetVersion",
-    "recog_result_ntf_handler",
-    "recog_status_ntf_handler",
-    "recog_error_ntf_handler",
-    "GrammarCallBack",
-    "LexiconCallBack",
-    "QISRSessionBegin",
-    "QISRAudioWrite",
-    "QISRGetResult",
-    "QISRGetBinaryResult",
-    "QISRSessionEnd",
-    "QISRGetParam",
-    "QISRSetParam",
-    "QISRRegisterNotify",
-    "QISRBuildGrammar",
-    "QISRUpdateLexicon",
-    "QISESessionBegin",
-    "QISETextPut",
-    "QISEAudioWrite",
-    "QISEGetResult",
-    "QISEResultInfo",
-    "QISESessionEnd",
-    "QISEGetParam",
-    "ivw_ntf_handler",
-    "QIVWSessionBegin",
-    "QIVWSessionEnd",
-    "QIVWAudioWrite",
-    "QIVWRegisterNotify",
-    "QIVWGetResInfo",
-    "tts_result_ntf_handler",
-    "tts_status_ntf_handler",
-    "tts_error_ntf_handler",
-    "QTTSSessionBegin",
-    "QTTSTextPut",
-    "QTTSAudioGet",
-    "QTTSAudioInfo",
-    "QTTSSessionEnd",
-    "QTTSGetParam",
-    "QTTSSetParam",
-    "QTTSRegisterNotify",
-]
+from .msp import msc
+from .msp import MSPAssert
+from .msp import MSPLogin
+from .msp import MSPLogout
+from .msp import MSPSetParam
+from .msp import MSPGetParam
+from .msp import MSPUploadData
+from .msp import MSPGetVersion
+from .msp import MSPStatus
+from .msp import MSPAudioSampleStatus
+from .msp import MSPRECStatus
+from .msp import MSPEPStatus
+from .msp import MSPTTSStatus
+from .msp import MSPHCRDataStatus
+from .msp import MSPIVWMSGStatus
+from .msp import MSPDATASampleStatus
+from .qisr import GrammarCallBack
+from .qisr import LexiconCallBack
+from .qisr import QISRSessionBegin
+from .qisr import QISRAudioWrite
+from .qisr import QISRGetResult
+from .qisr import QISRSessionEnd
+from .qisr import QISRGetParam
+from .qisr import QISRBuildGrammar
+from .qisr import QISRUpdateLexicon
+from .qtts import QTTSSessionBegin
+from .qtts import QTTSTextPut
+from .qtts import QTTSAudioGet
+from .qtts import QTTSSessionEnd
+from .qtts import QTTSGetParam
+from .qivw import msgProcCallBack
+from .qivw import QIVWSessionBegin
+from .qivw import QIVWSessionEnd
+from .qivw import QIVWAudioWrite
+from .qivw import QIVWRegisterNotify
+from .qise import QISESessionBegin
+from .qise import QISESessionEnd
+from .qise import QISETextPut
+from .qise import QISEAudioWrite
+from .qise import QISEGetResult
 
 
 class MSC:
@@ -195,7 +132,7 @@ class MSC:
             # Yield Audio Data
             yield audioData
 
-            if synthStatus == MSPTTSFlags.MSP_TTS_FLAG_DATA_END.value:
+            if synthStatus == MSPTTSStatus.MSP_TTS_FLAG_DATA_END.value:
                 # Session End
                 QTTSSessionEnd(sessionID, "Normal End.")
                 break
@@ -207,15 +144,14 @@ class MSC:
         stream: Stream,
         chunk_size: int = 2048,
         user_data=None,
-        stop_event: Event = None
+        stop_event: Event = None,
     ):
         # Session Begin
         sessionID = QIVWSessionBegin(grammarList=None, params=params)
 
         # Register Notify
-        msgProcCb = ivw_ntf_handler(message_callback)
-        QIVWRegisterNotify(sessionID=sessionID,
-                           msgProcCb=msgProcCb, userData=user_data)
+        msgProcCb = msgProcCallBack(message_callback)
+        QIVWRegisterNotify(sessionID=sessionID, msgProcCb=msgProcCb, userData=user_data)
 
         # Audio Write
         audioData = stream.read(chunk_size)
@@ -247,11 +183,7 @@ class MSC:
         # Session Begin
         sessionID = QISESessionBegin(params=params, userModelId=None)
 
-        QISETextPut(
-            sessionID=sessionID,
-            textString=text,
-            params=None
-        )
+        QISETextPut(sessionID=sessionID, textString=text, params=None)
 
         # Audio Write
         waveData = stream.read(chunk_size)
@@ -296,3 +228,48 @@ class MSC:
 
 
 __version__ = "0.1.0"
+
+__all__ = [
+    __version__,
+    msc,
+    MSC,
+    MSPStatus,
+    MSPAudioSampleStatus,
+    MSPRECStatus,
+    MSPEPStatus,
+    MSPTTSStatus,
+    MSPHCRDataStatus,
+    MSPIVWMSGStatus,
+    MSPDATASampleStatus,
+    MSPAssert,
+    MSPLogin,
+    MSPLogout,
+    MSPSetParam,
+    MSPGetParam,
+    MSPUploadData,
+    MSPGetVersion,
+    QISRSessionBegin,
+    QISRAudioWrite,
+    QISRGetResult,
+    QISRSessionEnd,
+    QISRGetParam,
+    QISRBuildGrammar,
+    QISRUpdateLexicon,
+    LexiconCallBack,
+    GrammarCallBack,
+    QTTSSessionBegin,
+    QTTSTextPut,
+    QTTSAudioGet,
+    QTTSSessionEnd,
+    QTTSGetParam,
+    msgProcCallBack,
+    QIVWSessionBegin,
+    QIVWSessionEnd,
+    QIVWAudioWrite,
+    QIVWRegisterNotify,
+    QISESessionBegin,
+    QISESessionEnd,
+    QISETextPut,
+    QISEAudioWrite,
+    QISEGetResult,
+]
