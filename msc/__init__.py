@@ -92,7 +92,7 @@ class MSC:
 
                 if rsltStatus == MSPRECStatus.MSP_REC_STATUS_COMPLETE:
                     # Session End
-                    QISRSessionEnd(sessionID, "Normal End.")
+                    QISRSessionEnd(sessionID, b"Normal End.")
                     break
 
     @staticmethod
@@ -112,7 +112,7 @@ class MSC:
 
             if synthStatus == MSPTTSStatus.MSP_TTS_FLAG_DATA_END:
                 # Session End
-                QTTSSessionEnd(sessionID, "Normal End.")
+                QTTSSessionEnd(sessionID, b"Normal End.")
                 break
 
     @staticmethod
@@ -155,6 +155,9 @@ class MSC:
             audioData=audioData,
             audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_LAST,
         )
+
+        # Session End
+        QIVWSessionEnd(sessionID, b"Normal End.")
 
     @staticmethod
     def ase(
@@ -200,7 +203,7 @@ class MSC:
 
                 if rsltStatus == MSPRECStatus.MSP_REC_STATUS_COMPLETE:
                     # Session End
-                    QISESessionEnd(sessionID, "Normal End.")
+                    QISESessionEnd(sessionID, b"Normal End.")
                     break
 
     def __del__(self) -> None:
