@@ -8,7 +8,7 @@ A third-party Python SDK for a iFLYTEK MSC. Using for ASR, TSS, KWS.
     $ pip install git+https://github.com/jm12138/iFLYTEK-MSC-Python-SDK
     ```
 
-* Voice Wakeup (KWS)
+* Voice Wakeup (KWS) using Mic Input
 
     ```python
     import msc
@@ -130,5 +130,38 @@ A third-party Python SDK for a iFLYTEK MSC. Using for ASR, TSS, KWS.
                 }
             ]
         }
+
+* Speech Recognizer (ASR) using Mic Input
+
+    ```python
+    import msc
+    import pyaudio
+
+    # Audio Stream
+    p = pyaudio.PyAudio()
+    input_stream = p.open(
+        format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=2048
+    )
+
+    # Set APP ID
+    appid = ""
+
+    # Set MSC Client
+    client = msc.MSC(params=f"appid={appid}".encode("UTF-8"))
+
+    # Set Domain
+    domain = "iat"
+
+    # Start KWS
+    for item in client.asr(
+        params=f"domain={domain}".encode("UTF-8"),
+        stream=input_stream,
+        chunk_size=2048,
+    ):
+        print(item.decode("UTF-8"))
+    ```
+
+        {"sn":1,"ls":false,"bg":0,"ed":0,"ws":[{"bg":64,"cw":[{"sc":0.0,"w":"今天"}]},{"bg":132,"cw":[{"sc":0.0,"w":"天气"}]},{"bg":164,"cw":[{"sc":0.0,"w":"怎么样"}]}]}
+        {"sn":2,"ls":true,"bg":0,"ed":0,"ws":[{"bg":235,"cw":[{"sc":0.0,"w":"？"}]}]}
 
 * [Offical Documents](https://www.xfyun.cn/doc/mscapi/Windows&Linux/wlapi.html)
