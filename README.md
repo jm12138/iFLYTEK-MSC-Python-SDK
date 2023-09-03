@@ -30,7 +30,7 @@ A third-party Python SDK for a iFLYTEK MSC. Using for ASR, TSS, KWS.
     appid = '' 
 
     # Set MSC Client
-    client = msc.MSC(params=f"appid={appid}")
+    client = msc.MSC(params=f"appid={appid}".encode('UTF-8'))
 
     # Stop Event
     stop_event = Event()
@@ -62,7 +62,7 @@ A third-party Python SDK for a iFLYTEK MSC. Using for ASR, TSS, KWS.
 
     # Start KWS
     client.kws(
-        params=f'ivw_res_path=fo|{ivw_res_path}',
+        params=f'ivw_res_path=fo|{ivw_res_path}'.encode('UTF-8'),
         message_callback=message_callback,
         stream=input_stream,
         chunk_size=2048,
