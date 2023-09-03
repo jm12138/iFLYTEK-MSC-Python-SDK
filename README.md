@@ -152,7 +152,7 @@ A third-party Python SDK for a iFLYTEK MSC. Using for ASR, TSS, KWS.
     # Set Domain
     domain = "iat"
 
-    # Start KWS
+    # Start ASR
     for item in client.asr(
         params=f"domain={domain}".encode("UTF-8"),
         stream=input_stream,
@@ -163,5 +163,32 @@ A third-party Python SDK for a iFLYTEK MSC. Using for ASR, TSS, KWS.
 
         {"sn":1,"ls":false,"bg":0,"ed":0,"ws":[{"bg":64,"cw":[{"sc":0.0,"w":"今天"}]},{"bg":132,"cw":[{"sc":0.0,"w":"天气"}]},{"bg":164,"cw":[{"sc":0.0,"w":"怎么样"}]}]}
         {"sn":2,"ls":true,"bg":0,"ed":0,"ws":[{"bg":235,"cw":[{"sc":0.0,"w":"？"}]}]}
+
+* Speech Synthesizer (TTS)
+
+    ```python
+    import msc
+    import pyaudio
+
+    # Audio Stream
+    p = pyaudio.PyAudio()
+    output_stream = p.open(format=pyaudio.paInt16, channels=1, rate=16000, output=True)
+
+    # Set APP ID
+    appid = ""
+
+    # Set MSC Client
+    client = msc.MSC(params=f"appid={appid}".encode("UTF-8"))
+
+    # Set Domain
+    text_encoding = "UTF8"
+
+    # Start TTS
+    for item in client.tts(
+        params=f"text_encoding={text_encoding}".encode("UTF-8"),
+        text="你好，我是您的语音助手，有什么需要帮助的吗？".encode("UTF-8"),
+    ):
+        output_stream.write(item)
+    ```
 
 * [Offical Documents](https://www.xfyun.cn/doc/mscapi/Windows&Linux/wlapi.html)
