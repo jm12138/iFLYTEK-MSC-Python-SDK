@@ -1,5 +1,3 @@
-import json
-
 from typing import Callable
 from typing import Generator
 from ctypes import c_void_p
