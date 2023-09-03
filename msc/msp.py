@@ -1070,16 +1070,13 @@ class MSPDATASampleStatus:
 
 
 def MSPAssert(errorCode: int, errorMsg: str):
-    assert (
-        errorCode == MSPStatus.MSP_SUCCESS
-    ), "%s, error code: %d, error name: %s" % (
+    assert errorCode == MSPStatus.MSP_SUCCESS, "%s, error code: %d" % (
         errorMsg,
         errorCode,
-        MSPStatus(errorCode).name,
     )
 
 
-'''
+"""
 /** 
  * @fn		MSPLogin
  * @brief	user login interface
@@ -1093,7 +1090,7 @@ def MSPAssert(errorCode: int, errorMsg: str):
  * @see		
  */
 int MSPAPI MSPLogin(const char* usr, const char* pwd, const char* params);
-'''
+"""
 msc.MSPLogin.argtypes = [c_char_p, c_char_p, c_char_p]
 msc.MSPLogin.restype = c_int
 
@@ -1103,7 +1100,7 @@ def MSPLogin(usr: bytes, pwd: bytes, params: bytes):
     MSPAssert(errorCode, "MSPLogin failed")
 
 
-'''
+"""
 /** 
  * @fn		MSPLogout
  * @brief	user logout interface
@@ -1114,7 +1111,7 @@ def MSPLogin(usr: bytes, pwd: bytes, params: bytes):
  * @see		
  */
 int MSPAPI MSPLogout();
-'''
+"""
 msc.MSPLogout.argtypes = []
 msc.MSPLogout.restype = c_int
 
@@ -1124,7 +1121,7 @@ def MSPLogout():
     MSPAssert(errorCode, "MSPLogout failed")
 
 
-'''
+"""
 /** 
  * @fn		MSPSetParam
  * @brief	set params of msc
@@ -1137,7 +1134,7 @@ def MSPLogout():
  * @see		
  */
 int MSPAPI MSPSetParam( const char* paramName, const char* paramValue );
-'''
+"""
 msc.MSPSetParam.argtypes = [c_char_p, c_char_p]
 msc.MSPSetParam.restype = c_int
 
@@ -1147,7 +1144,7 @@ def MSPSetParam(paramName: bytes, paramValue: bytes):
     MSPAssert(errorCode, "MSPSetParam failed")
 
 
-'''
+"""
 /** 
  * @fn		MSPGetParam
  * @brief	get params of msc
@@ -1161,7 +1158,7 @@ def MSPSetParam(paramName: bytes, paramValue: bytes):
  * @see		
  */
 int MSPAPI MSPGetParam( const char *paramName, char *paramValue, unsigned int *valueLen );
-'''
+"""
 msc.MSPGetParam.argtypes = [c_char_p, c_char_p, POINTER(c_uint)]
 msc.MSPGetParam.restype = c_int
 
@@ -1173,7 +1170,7 @@ def MSPGetParam(paramName: bytes, paramValue: bytes) -> bytes:
     return string_at(paramValue, valueLen.value)
 
 
-'''
+"""
 /** 
  * @fn		MSPUploadData
  * @brief	Upload User Specific Data
@@ -1189,22 +1186,20 @@ def MSPGetParam(paramName: bytes, paramValue: bytes) -> bytes:
  * @see		
  */
 const char* MSPAPI MSPUploadData(const char* dataName, void* data, unsigned int dataLen, const char* params, int* errorCode);
-'''
-msc.MSPUploadData.argtypes = [
-    c_char_p, c_void_p, c_uint, c_char_p, POINTER(c_int)]
+"""
+msc.MSPUploadData.argtypes = [c_char_p, c_void_p, c_uint, c_char_p, POINTER(c_int)]
 msc.MSPUploadData.restype = c_char_p
 
 
 def MSPUploadData(dataName: bytes, data: bytes, params: bytes) -> bytes:
     dataLen = len(data)
     errorCode = c_int()
-    res: bytes = msc.MSPUploadData(
-        dataName, data, dataLen, params, byref(errorCode))
+    res: bytes = msc.MSPUploadData(dataName, data, dataLen, params, byref(errorCode))
     MSPAssert(errorCode.value, "MSPUploadData failed")
     return res
 
 
-'''
+"""
 /**
  * @fn		MSPGetVersion
  * @brief	Get version of MSC or Local Engine
@@ -1217,7 +1212,7 @@ def MSPUploadData(dataName: bytes, data: bytes, params: bytes) -> bytes:
  * @see
  */
 const char* MSPAPI MSPGetVersion(const char *verName, int *errorCode);
-'''
+"""
 msc.MSPGetVersion.argtypes = [c_char_p, POINTER(c_int)]
 msc.MSPGetVersion.restype = c_char_p
 
