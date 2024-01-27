@@ -13,7 +13,5 @@ setup(
     url='https://github.com/jm12138/iFLYTEK-MSC-Python-SDK',
     packages=['msc'],
     license='Apache License 2.0',
-    include_package_data=True,
-    platforms=['win32', 'win-amd64', 'linux-i686', 'linux-x86_64'],
     requires=['pyaudio']
 )
