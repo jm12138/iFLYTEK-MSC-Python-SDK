@@ -14,8 +14,6 @@ setup(
     packages=['msc'],
     license='Apache License 2.0',
     include_package_data=True,
-    package_data={
-        'bin': ['*.dll', '*.so']
-    },
-    platforms=['win32', 'win-amd64', 'linux-i686', 'linux-x86_64']
+    platforms=['win32', 'win-amd64', 'linux-i686', 'linux-x86_64'],
+    requires=['pyaudio']
 )
