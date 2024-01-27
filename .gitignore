@@ -169,3 +169,5 @@ msc/msc.cfg
 *.jet
 include/
 bin/
+test.py
+usr.*
