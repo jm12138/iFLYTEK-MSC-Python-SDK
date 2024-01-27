@@ -1,10 +1,9 @@
 from setuptools import setup
-from msc import __version__
 
 
 setup(
     name='msc',
-    version=__version__,
+    version='0.2.0',
     description='A package for IFLYTEK MSC.',
     long_description=open('README.md', encoding='UTF-8').read(),
     long_description_content_type='text/markdown',

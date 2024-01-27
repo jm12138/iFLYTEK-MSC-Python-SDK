@@ -8,6 +8,15 @@ A third-party Python SDK for a iFLYTEK MSC. Using for ASR, TSS, KWS.
     $ pip install git+https://github.com/jm12138/iFLYTEK-MSC-Python-SDK
     ```
 
+* Config Environ
+
+    ```python
+    import os
+
+    # Set MSC SDK DLL/SO File Path
+    os.environ['MSC_SDK_PATH'] = ''
+    ```
+
 * Voice Wakeup (KWS) using Mic Input
 
     ```python
