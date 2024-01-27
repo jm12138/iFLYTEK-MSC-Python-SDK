@@ -1,21 +1,23 @@
 # iFLYTEK-MSC-Python-SDK
-## Introduction
-* [中文](./README_CN.md) | English
 
-* A third-party Python SDK for a iFLYTEK MSC. Using for ASR, TSS, KWS.
+## 简介
 
-## Quick Start
-* Install MSC Python SDK
+* 中文 | [English](./README.md)
+
+* 一个讯飞智能语音平台 MSC 的第三方 Python SDK，支持语音唤醒、语音识别、语音合成、语音评测等功能。
+
+## 快速开始
+* 安装 MSC Python SDK
 
     ```bash
     $ pip install git+https://github.com/jm12138/iFLYTEK-MSC-Python-SDK
     ```
 
-* Download MSC SDK
+* 下载 MSC SDK
 
     * [SDK Download](https://www.xfyun.cn/sdk/dispatcher)
 
-* Voice Wakeup (KWS) using Mic Input
+* 语音唤醒
 
     ```python
     import os
@@ -146,7 +148,7 @@
             ]
         }
 
-* Speech Recognizer (ASR) using Mic Input
+* 语音识别
 
     ```python
     import os
@@ -186,7 +188,7 @@
         {"sn":1,"ls":false,"bg":0,"ed":0,"ws":[{"bg":64,"cw":[{"sc":0.0,"w":"今天"}]},{"bg":132,"cw":[{"sc":0.0,"w":"天气"}]},{"bg":164,"cw":[{"sc":0.0,"w":"怎么样"}]}]}
         {"sn":2,"ls":true,"bg":0,"ed":0,"ws":[{"bg":235,"cw":[{"sc":0.0,"w":"？"}]}]}
 
-* Speech Synthesizer (TTS)
+* 语音合成
 
     ```python
     import os
