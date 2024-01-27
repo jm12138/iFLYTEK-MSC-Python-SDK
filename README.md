@@ -1,25 +1,27 @@
 # iFLYTEK-MSC-Python-SDK
-A third-party Python SDK for a iFLYTEK MSC. Using for ASR, TSS, KWS.
+## Introduction
 
-# Quick Start
+* A third-party Python SDK for a iFLYTEK MSC. Using for ASR, TSS, KWS.
+
+## Quick Start
 * Install MSC SDK
 
     ```bash
     $ pip install git+https://github.com/jm12138/iFLYTEK-MSC-Python-SDK
     ```
 
-* Config Environ
+* Download MSC SDK
+
+    * [SDK Download](https://www.xfyun.cn/sdk/dispatcher)
+
+* Voice Wakeup (KWS) using Mic Input
 
     ```python
     import os
 
     # Set MSC SDK DLL/SO File Path
     os.environ['MSC_SDK_PATH'] = ''
-    ```
 
-* Voice Wakeup (KWS) using Mic Input
-
-    ```python
     import msc
     import pyaudio
     from ctypes import string_at, c_void_p
@@ -143,6 +145,11 @@ A third-party Python SDK for a iFLYTEK MSC. Using for ASR, TSS, KWS.
 * Speech Recognizer (ASR) using Mic Input
 
     ```python
+    import os
+
+    # Set MSC SDK DLL/SO File Path
+    os.environ['MSC_SDK_PATH'] = ''
+
     import msc
     import pyaudio
 
@@ -176,6 +183,11 @@ A third-party Python SDK for a iFLYTEK MSC. Using for ASR, TSS, KWS.
 * Speech Synthesizer (TTS)
 
     ```python
+    import os
+
+    # Set MSC SDK DLL/SO File Path
+    os.environ['MSC_SDK_PATH'] = ''
+
     import msc
     import pyaudio
 
@@ -199,5 +211,7 @@ A third-party Python SDK for a iFLYTEK MSC. Using for ASR, TSS, KWS.
     ):
         output_stream.write(item)
     ```
+
+## Documentation
 
 * [Offical Documents](https://www.xfyun.cn/doc/mscapi/Windows&Linux/wlapi.html)
