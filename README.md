@@ -18,13 +18,6 @@
 * Voice Wakeup (KWS) using Mic Input
 
     ```python
-    import os
-
-    # Set MSC SDK DLL/SO File Path
-    # X86: SDK_DIR/bin/msc.dll
-    # X64: SDK_DIR/bin/msc_x64.dll
-    os.environ['MSC_SDK_PATH'] = ''
-
     import msc
     import pyaudio
     from ctypes import string_at, c_void_p
@@ -43,8 +36,13 @@
     # Set APP ID
     appid = '' 
 
+    # Set MSC SDK DLL/SO File Path
+    # X86: SDK_DIR/bin/msc.dll
+    # X64: SDK_DIR/bin/msc_x64.dll
+    sdk_path = ''
+
     # Set MSC Client
-    client = msc.MSC(params=f"appid={appid}".encode('UTF-8'))
+    client = msc.MSC(sdk_path=sdk_path, params=f"appid={appid}".encode('UTF-8'))
 
     # Stop Event
     stop_event = Event()
@@ -149,13 +147,6 @@
 * Speech Recognizer (ASR) using Mic Input
 
     ```python
-    import os
-
-    # Set MSC SDK DLL/SO File Path
-    # X86: SDK_DIR/bin/msc.dll
-    # X64: SDK_DIR/bin/msc_x64.dll
-    os.environ['MSC_SDK_PATH'] = ''
-
     import msc
     import pyaudio
 
@@ -166,10 +157,15 @@
     )
 
     # Set APP ID
-    appid = ""
+    appid = '' 
+
+    # Set MSC SDK DLL/SO File Path
+    # X86: SDK_DIR/bin/msc.dll
+    # X64: SDK_DIR/bin/msc_x64.dll
+    sdk_path = ''
 
     # Set MSC Client
-    client = msc.MSC(params=f"appid={appid}".encode("UTF-8"))
+    client = msc.MSC(sdk_path=sdk_path, params=f"appid={appid}".encode('UTF-8'))
 
     # Set Domain
     domain = "iat"
@@ -189,13 +185,6 @@
 * Speech Synthesizer (TTS)
 
     ```python
-    import os
-
-    # Set MSC SDK DLL/SO File Path
-    # X86: SDK_DIR/bin/msc.dll
-    # X64: SDK_DIR/bin/msc_x64.dll
-    os.environ['MSC_SDK_PATH'] = ''
-
     import msc
     import pyaudio
 
@@ -204,10 +193,15 @@
     output_stream = p.open(format=pyaudio.paInt16, channels=1, rate=16000, output=True)
 
     # Set APP ID
-    appid = ""
+    appid = '' 
+
+    # Set MSC SDK DLL/SO File Path
+    # X86: SDK_DIR/bin/msc.dll
+    # X64: SDK_DIR/bin/msc_x64.dll
+    sdk_path = ''
 
     # Set MSC Client
-    client = msc.MSC(params=f"appid={appid}".encode("UTF-8"))
+    client = msc.MSC(sdk_path=sdk_path, params=f"appid={appid}".encode('UTF-8'))
 
     # Set Text Encoding
     text_encoding = "UTF8"

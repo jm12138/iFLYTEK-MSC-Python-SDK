@@ -1,18 +1,14 @@
+from ctypes import cdll
+from ctypes import c_void_p
 from typing import Callable
 from typing import Generator
-from ctypes import c_void_p
 from threading import Event
 
 from pyaudio import Stream
 
-from .msp import msc
 from .msp import MSPAssert
-from .msp import MSPLogin
-from .msp import MSPLogout
-from .msp import MSPSetParam
-from .msp import MSPGetParam
-from .msp import MSPUploadData
-from .msp import MSPGetVersion
+
+from .msp import MSP
 from .msp import MSPStatus
 from .msp import MSPAudioSampleStatus
 from .msp import MSPRECStatus
@@ -21,46 +17,33 @@ from .msp import MSPTTSStatus
 from .msp import MSPHCRDataStatus
 from .msp import MSPIVWMSGStatus
 from .msp import MSPDATASampleStatus
-from .qisr import GrammarCallBack
-from .qisr import LexiconCallBack
-from .qisr import QISRSessionBegin
-from .qisr import QISRAudioWrite
-from .qisr import QISRGetResult
-from .qisr import QISRSessionEnd
-from .qisr import QISRGetParam
-from .qisr import QISRBuildGrammar
-from .qisr import QISRUpdateLexicon
-from .qtts import QTTSSessionBegin
-from .qtts import QTTSTextPut
-from .qtts import QTTSAudioGet
-from .qtts import QTTSSessionEnd
-from .qtts import QTTSGetParam
-from .qivw import msgProcCallBack
-from .qivw import QIVWSessionBegin
-from .qivw import QIVWSessionEnd
-from .qivw import QIVWAudioWrite
-from .qivw import QIVWRegisterNotify
-from .qise import QISESessionBegin
-from .qise import QISESessionEnd
-from .qise import QISETextPut
-from .qise import QISEAudioWrite
-from .qise import QISEGetResult
+
+from .qise import QISE
+from .qisr import QISR
+from .qivw import QIVW
+from .qtts import QTTS
 
 
-class MSC:
-    def __init__(self, params: bytes) -> None:
-        MSPLogin(usr=None, pwd=None, params=params)
+class MSC(MSP, QISR, QTTS, QIVW, QISE):
+    def __init__(self, sdk_path: str, params: bytes) -> None:
+        self.msc = cdll.LoadLibrary(sdk_path)
+        MSP.__init__(self, self.msc)
+        QISR.__init__(self, self.msc)
+        QTTS.__init__(self, self.msc)
+        QIVW.__init__(self, self.msc)
+        QISE.__init__(self, self.msc)
 
-    @staticmethod
+        self.MSPLogin(usr=b"", pwd=b"", params=params)
+
     def asr(
-        params: bytes, stream: Stream, chunk_size: int = 2048
+        self, params: bytes, stream: Stream, chunk_size: int = 2048
     ) -> Generator[bytes, None, None]:
         # Session Begin
-        sessionID = QISRSessionBegin(grammarList=None, params=params)
+        sessionID = self.QISRSessionBegin(grammarList=b"", params=params)
 
         # Audio Write
         waveData = stream.read(chunk_size)
-        epStatus, recogStatus = QISRAudioWrite(
+        epStatus, recogStatus = self.QISRAudioWrite(
             sessionID=sessionID,
             waveData=waveData,
             audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_FIRST,
@@ -70,7 +53,7 @@ class MSC:
             if epStatus != MSPEPStatus.MSP_EP_AFTER_SPEECH:
                 # Audio Write
                 waveData = stream.read(chunk_size)
-                epStatus, recogStatus = QISRAudioWrite(
+                epStatus, recogStatus = self.QISRAudioWrite(
                     sessionID=sessionID,
                     waveData=waveData,
                     audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_CONTINUE,
@@ -78,62 +61,63 @@ class MSC:
             else:
                 # Audio Write
                 waveData = stream.read(chunk_size)
-                epStatus, recogStatus = QISRAudioWrite(
+                epStatus, recogStatus = self.QISRAudioWrite(
                     sessionID=sessionID,
                     waveData=waveData,
                     audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_LAST,
                 )
             if recogStatus == MSPRECStatus.MSP_REC_STATUS_SUCCESS:
                 # Get Result
-                result, rsltStatus = QISRGetResult(sessionID, waitTime=1000)
+                result, rsltStatus = self.QISRGetResult(sessionID, waitTime=1000)
 
                 if result:
                     yield result
 
                 if rsltStatus == MSPRECStatus.MSP_REC_STATUS_COMPLETE:
                     # Session End
-                    QISRSessionEnd(sessionID, b"Normal End.")
+                    self.QISRSessionEnd(sessionID, b"Normal End.")
                     break
 
-    @staticmethod
-    def tts(params: bytes, text: bytes) -> Generator[bytes, None, None]:
+    def tts(self, params: bytes, text: bytes) -> Generator[bytes, None, None]:
         # Session Begin
-        sessionID = QTTSSessionBegin(params=params)
+        sessionID = self.QTTSSessionBegin(params=params)
 
         # Text Put
-        QTTSTextPut(sessionID=sessionID, textString=text, params=None)
+        self.QTTSTextPut(sessionID=sessionID, textString=text, params=b"")
 
         while True:
             # Audio Data Get
-            audioData, synthStatus = QTTSAudioGet(sessionID)
+            audioData, synthStatus = self.QTTSAudioGet(sessionID)
 
             # Yield Audio Data
             yield audioData
 
             if synthStatus == MSPTTSStatus.MSP_TTS_FLAG_DATA_END:
                 # Session End
-                QTTSSessionEnd(sessionID, b"Normal End.")
+                self.QTTSSessionEnd(sessionID, b"Normal End.")
                 break
 
-    @staticmethod
     def kws(
+        self,
         params: bytes,
         message_callback: Callable[[bytes, int, int, int, c_void_p, c_void_p], int],
         stream: Stream,
         chunk_size: int = 2048,
-        user_data=None,
-        stop_event: Event = None,
+        user_data=b"",
+        stop_event: Event = Event(),
     ) -> None:
         # Session Begin
-        sessionID = QIVWSessionBegin(grammarList=None, params=params)
+        sessionID = self.QIVWSessionBegin(grammarList=b"", params=params)
 
         # Register Notify
-        msgProcCb = msgProcCallBack(message_callback)
-        QIVWRegisterNotify(sessionID=sessionID, msgProcCb=msgProcCb, userData=user_data)
+        msgProcCb = self.msgProcCallBack(message_callback)
+        self.QIVWRegisterNotify(
+            sessionID=sessionID, msgProcCb=msgProcCb, userData=user_data
+        )
 
         # Audio Write
         audioData = stream.read(chunk_size)
-        QIVWAudioWrite(
+        self.QIVWAudioWrite(
             sessionID=sessionID,
             audioData=audioData,
             audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_FIRST,
@@ -142,7 +126,7 @@ class MSC:
         while not stop_event.is_set():
             # Audio Write
             audioData = stream.read(chunk_size)
-            QIVWAudioWrite(
+            self.QIVWAudioWrite(
                 sessionID=sessionID,
                 audioData=audioData,
                 audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_CONTINUE,
@@ -150,27 +134,26 @@ class MSC:
 
         # Audio Write
         audioData = stream.read(chunk_size)
-        QIVWAudioWrite(
+        self.QIVWAudioWrite(
             sessionID=sessionID,
             audioData=audioData,
             audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_LAST,
         )
 
         # Session End
-        QIVWSessionEnd(sessionID, b"Normal End.")
+        self.QIVWSessionEnd(sessionID, b"Normal End.")
 
-    @staticmethod
     def ase(
-        params: bytes, text: bytes, stream: Stream, chunk_size: int = 2048
+        self, params: bytes, text: bytes, stream: Stream, chunk_size: int = 2048
     ) -> Generator[bytes, None, None]:
         # Session Begin
-        sessionID = QISESessionBegin(params=params, userModelId=None)
+        sessionID = self.QISESessionBegin(params=params, userModelId=b"")
 
-        QISETextPut(sessionID=sessionID, textString=text, params=None)
+        self.QISETextPut(sessionID=sessionID, textString=text, params=b"")
 
         # Audio Write
         waveData = stream.read(chunk_size)
-        epStatus, recogStatus = QISEAudioWrite(
+        epStatus, recogStatus = self.QISEAudioWrite(
             sessionID=sessionID,
             waveData=waveData,
             audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_FIRST,
@@ -180,7 +163,7 @@ class MSC:
             if epStatus != MSPEPStatus.MSP_EP_AFTER_SPEECH:
                 # Audio Write
                 waveData = stream.read(chunk_size)
-                epStatus, recogStatus = QISEAudioWrite(
+                epStatus, recogStatus = self.QISEAudioWrite(
                     sessionID=sessionID,
                     waveData=waveData,
                     audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_CONTINUE,
@@ -188,14 +171,14 @@ class MSC:
             else:
                 # Audio Write
                 waveData = stream.read(chunk_size)
-                epStatus, recogStatus = QISEAudioWrite(
+                epStatus, recogStatus = self.QISEAudioWrite(
                     sessionID=sessionID,
                     waveData=waveData,
                     audioStatus=MSPAudioSampleStatus.MSP_AUDIO_SAMPLE_LAST,
                 )
             if recogStatus == MSPRECStatus.MSP_REC_STATUS_SUCCESS:
                 # Get Result
-                result, rsltStatus = QISEGetResult(sessionID)
+                result, rsltStatus = self.QISEGetResult(sessionID)
 
                 if result:
                     # Yield Result
@@ -203,56 +186,30 @@ class MSC:
 
                 if rsltStatus == MSPRECStatus.MSP_REC_STATUS_COMPLETE:
                     # Session End
-                    QISESessionEnd(sessionID, b"Normal End.")
+                    self.QISESessionEnd(sessionID, b"Normal End.")
                     break
 
     def __del__(self) -> None:
-        MSPLogout()
+        self.MSPLogout()
 
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
-    __version__,
-    msc,
-    MSC,
-    MSPStatus,
-    MSPAudioSampleStatus,
-    MSPRECStatus,
-    MSPEPStatus,
-    MSPTTSStatus,
-    MSPHCRDataStatus,
-    MSPIVWMSGStatus,
-    MSPDATASampleStatus,
-    MSPAssert,
-    MSPLogin,
-    MSPLogout,
-    MSPSetParam,
-    MSPGetParam,
-    MSPUploadData,
-    MSPGetVersion,
-    QISRSessionBegin,
-    QISRAudioWrite,
-    QISRGetResult,
-    QISRSessionEnd,
-    QISRGetParam,
-    QISRBuildGrammar,
-    QISRUpdateLexicon,
-    LexiconCallBack,
-    GrammarCallBack,
-    QTTSSessionBegin,
-    QTTSTextPut,
-    QTTSAudioGet,
-    QTTSSessionEnd,
-    QTTSGetParam,
-    msgProcCallBack,
-    QIVWSessionBegin,
-    QIVWSessionEnd,
-    QIVWAudioWrite,
-    QIVWRegisterNotify,
-    QISESessionBegin,
-    QISESessionEnd,
-    QISETextPut,
-    QISEAudioWrite,
-    QISEGetResult,
+    "__version__",
+    "MSC",
+    "MSPStatus",
+    "MSPAudioSampleStatus",
+    "MSPRECStatus",
+    "MSPEPStatus",
+    "MSPTTSStatus",
+    "MSPHCRDataStatus",
+    "MSPIVWMSGStatus",
+    "MSPDATASampleStatus",
+    "MSPAssert",
+    "QISE",
+    "QISR",
+    "QIVW",
+    "QTTS",
+    "MSP",
 ]

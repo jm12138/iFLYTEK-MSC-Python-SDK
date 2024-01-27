@@ -1,19 +1,8 @@
-import os
-
-from ctypes import cdll
 from ctypes import CDLL
 
 from ctypes import POINTER
 from ctypes import byref, string_at
 from ctypes import c_int, c_uint, c_void_p, c_char_p
-
-
-def LoadMSC() -> CDLL:
-    name = os.getenv('MSC_SDK_PATH')
-    assert name is not None, 'MSC_SDK_PATH is not set.'
-    return cdll.LoadLibrary(name)
-
-msc = LoadMSC()
 
 
 class MSPStatus:
@@ -1050,169 +1039,169 @@ def MSPAssert(errorCode: int, errorMsg: str):
     )
 
 
-"""
-/** 
- * @fn		MSPLogin
- * @brief	user login interface
- * 
- *  User login.
- * 
- * @return	int MSPAPI			- Return 0 in success, otherwise return error code.
- * @param	const char* usr		- [in] user name.
- * @param	const char* pwd		- [in] password.
- * @param	const char* params	- [in] parameters when user login.
- * @see		
- */
-int MSPAPI MSPLogin(const char* usr, const char* pwd, const char* params);
-"""
-msc.MSPLogin.argtypes = [c_char_p, c_char_p, c_char_p]
-msc.MSPLogin.restype = c_int
+class MSP:
+    def __init__(self, msc: CDLL):
+        self.msc = msc
+        self.msc.MSPLogin.argtypes = [c_char_p, c_char_p, c_char_p]
+        self.msc.MSPLogin.restype = c_int
 
+        self.msc.MSPLogout.argtypes = []
+        self.msc.MSPLogout.restype = c_int
 
-def MSPLogin(usr: bytes, pwd: bytes, params: bytes):
-    errorCode: int = msc.MSPLogin(usr, pwd, params)
-    MSPAssert(errorCode, "MSPLogin failed")
+        self.msc.MSPSetParam.argtypes = [c_char_p, c_char_p]
+        self.msc.MSPSetParam.restype = c_int
 
+        self.msc.MSPGetParam.argtypes = [c_char_p, c_char_p, POINTER(c_uint)]
+        self.msc.MSPGetParam.restype = c_int
 
-"""
-/** 
- * @fn		MSPLogout
- * @brief	user logout interface
- * 
- *  User logout
- * 
- * @return	int MSPAPI			- Return 0 in success, otherwise return error code.
- * @see		
- */
-int MSPAPI MSPLogout();
-"""
-msc.MSPLogout.argtypes = []
-msc.MSPLogout.restype = c_int
+        self.msc.MSPUploadData.argtypes = [
+            c_char_p,
+            c_void_p,
+            c_uint,
+            c_char_p,
+            POINTER(c_int),
+        ]
+        self.msc.MSPUploadData.restype = c_char_p
 
+        self.msc.MSPGetVersion.argtypes = [c_char_p, POINTER(c_int)]
+        self.msc.MSPGetVersion.restype = c_char_p
 
-def MSPLogout():
-    errorCode: int = msc.MSPLogout()
-    MSPAssert(errorCode, "MSPLogout failed")
+    """
+    /** 
+    * @fn		MSPLogin
+    * @brief	user login interface
+    * 
+    *  User login.
+    * 
+    * @return	int MSPAPI			- Return 0 in success, otherwise return error code.
+    * @param	const char* usr		- [in] user name.
+    * @param	const char* pwd		- [in] password.
+    * @param	const char* params	- [in] parameters when user login.
+    * @see		
+    */
+    int MSPAPI MSPLogin(const char* usr, const char* pwd, const char* params);
+    """
 
+    def MSPLogin(self, usr: bytes, pwd: bytes, params: bytes):
+        errorCode: int = self.msc.MSPLogin(usr, pwd, params)
+        MSPAssert(errorCode, "MSPLogin failed")
 
-"""
-/** 
- * @fn		MSPSetParam
- * @brief	set params of msc
- * 
- *  set param of msc
- * 
- * @return	int	- Return 0 if success, otherwise return errcode.
- * @param	const char* paramName	- [in] param name.
- * @param	const char* paramValue	- [in] param value
- * @see		
- */
-int MSPAPI MSPSetParam( const char* paramName, const char* paramValue );
-"""
-msc.MSPSetParam.argtypes = [c_char_p, c_char_p]
-msc.MSPSetParam.restype = c_int
+    """
+    /** 
+    * @fn		MSPLogout
+    * @brief	user logout interface
+    * 
+    *  User logout
+    * 
+    * @return	int MSPAPI			- Return 0 in success, otherwise return error code.
+    * @see		
+    */
+    int MSPAPI MSPLogout();
+    """
 
+    def MSPLogout(self):
+        errorCode: int = self.msc.MSPLogout()
+        MSPAssert(errorCode, "MSPLogout failed")
 
-def MSPSetParam(paramName: bytes, paramValue: bytes):
-    errorCode: int = msc.MSPSetParam(paramName, paramValue)
-    MSPAssert(errorCode, "MSPSetParam failed")
+    """
+    /** 
+    * @fn		MSPSetParam
+    * @brief	set params of msc
+    * 
+    *  set param of msc
+    * 
+    * @return	int	- Return 0 if success, otherwise return errcode.
+    * @param	const char* paramName	- [in] param name.
+    * @param	const char* paramValue	- [in] param value
+    * @see		
+    */
+    int MSPAPI MSPSetParam( const char* paramName, const char* paramValue );
+    """
 
+    def MSPSetParam(self, paramName: bytes, paramValue: bytes):
+        errorCode: int = self.msc.MSPSetParam(paramName, paramValue)
+        MSPAssert(errorCode, "MSPSetParam failed")
 
-"""
-/** 
- * @fn		MSPGetParam
- * @brief	get params of msc
- * 
- *  get param of msc
- * 
- * @return	int	- Return 0 if success, otherwise return errcode.
- * @param	const char* paramName	- [in] param name.
- * @param	char* paramValue	- [in/out] param value
- * @param	unsigned int* valueLen	- [in/out] param value (buffer) length
- * @see		
- */
-int MSPAPI MSPGetParam( const char *paramName, char *paramValue, unsigned int *valueLen );
-"""
-msc.MSPGetParam.argtypes = [c_char_p, c_char_p, POINTER(c_uint)]
-msc.MSPGetParam.restype = c_int
+    """
+    /** 
+    * @fn		MSPGetParam
+    * @brief	get params of msc
+    * 
+    *  get param of msc
+    * 
+    * @return	int	- Return 0 if success, otherwise return errcode.
+    * @param	const char* paramName	- [in] param name.
+    * @param	char* paramValue	- [in/out] param value
+    * @param	unsigned int* valueLen	- [in/out] param value (buffer) length
+    * @see		
+    */
+    int MSPAPI MSPGetParam( const char *paramName, char *paramValue, unsigned int *valueLen );
+    """
 
+    def MSPGetParam(self, paramName: bytes, paramValue: bytes) -> bytes:
+        valueLen = c_uint(len(paramValue))
+        errorCode: int = self.msc.MSPGetParam(paramName, paramValue, byref(valueLen))
+        MSPAssert(errorCode, "MSPGetParam failed")
+        return string_at(paramValue, valueLen.value)
 
-def MSPGetParam(paramName: bytes, paramValue: bytes) -> bytes:
-    valueLen = c_uint(len(paramValue))
-    errorCode: int = msc.MSPGetParam(paramName, paramValue, byref(valueLen))
-    MSPAssert(errorCode, "MSPGetParam failed")
-    return string_at(paramValue, valueLen.value)
+    """
+    /** 
+    * @fn		MSPUploadData
+    * @brief	Upload User Specific Data
+    * 
+    *  Upload data such as user config, custom grammar, etc.
+    * 
+    * @return	const char* MSPAPI		- data id returned by Server, used for special command.
+    * @param	const char* dataName	- [in] data name, should be unique to diff other data.
+    * @param	void* data				- [in] the data buffer pointer, data could be binary.
+    * @param	unsigned int dataLen	- [in] length of data.
+    * @param	const char* params		- [in] parameters about uploading data.
+    * @param	int* errorCode			- [out] Return 0 in success, otherwise return error code.
+    * @see		
+    */
+    const char* MSPAPI MSPUploadData(const char* dataName, void* data, unsigned int dataLen, const char* params, int* errorCode);
+    """
 
+    def MSPUploadData(self, dataName: bytes, data: bytes, params: bytes) -> bytes:
+        dataLen = len(data)
+        errorCode = c_int()
+        res: bytes = self.msc.MSPUploadData(
+            dataName, data, dataLen, params, byref(errorCode)
+        )
+        MSPAssert(errorCode.value, "MSPUploadData failed")
+        return res
 
-"""
-/** 
- * @fn		MSPUploadData
- * @brief	Upload User Specific Data
- * 
- *  Upload data such as user config, custom grammar, etc.
- * 
- * @return	const char* MSPAPI		- data id returned by Server, used for special command.
- * @param	const char* dataName	- [in] data name, should be unique to diff other data.
- * @param	void* data				- [in] the data buffer pointer, data could be binary.
- * @param	unsigned int dataLen	- [in] length of data.
- * @param	const char* params		- [in] parameters about uploading data.
- * @param	int* errorCode			- [out] Return 0 in success, otherwise return error code.
- * @see		
- */
-const char* MSPAPI MSPUploadData(const char* dataName, void* data, unsigned int dataLen, const char* params, int* errorCode);
-"""
-msc.MSPUploadData.argtypes = [c_char_p, c_void_p, c_uint, c_char_p, POINTER(c_int)]
-msc.MSPUploadData.restype = c_char_p
+    """
+    /**
+    * @fn		MSPGetVersion
+    * @brief	Get version of MSC or Local Engine
+    *
+    * Get version of MSC or Local Engine
+    * 
+    * @return	const char * MSPAPI		- Return version value if success, NULL if fail.
+    * @param	const char *verName		- [in] version name, could be "msc", "aitalk", "aisound", "ivw".
+    * @param	int *errorCode			- [out] Return 0 in success, otherwise return error code.
+    * @see
+    */
+    const char* MSPAPI MSPGetVersion(const char *verName, int *errorCode);
+    """
 
-
-def MSPUploadData(dataName: bytes, data: bytes, params: bytes) -> bytes:
-    dataLen = len(data)
-    errorCode = c_int()
-    res: bytes = msc.MSPUploadData(dataName, data, dataLen, params, byref(errorCode))
-    MSPAssert(errorCode.value, "MSPUploadData failed")
-    return res
-
-
-"""
-/**
- * @fn		MSPGetVersion
- * @brief	Get version of MSC or Local Engine
- *
- * Get version of MSC or Local Engine
- * 
- * @return	const char * MSPAPI		- Return version value if success, NULL if fail.
- * @param	const char *verName		- [in] version name, could be "msc", "aitalk", "aisound", "ivw".
- * @param	int *errorCode			- [out] Return 0 in success, otherwise return error code.
- * @see
- */
-const char* MSPAPI MSPGetVersion(const char *verName, int *errorCode);
-"""
-msc.MSPGetVersion.argtypes = [c_char_p, POINTER(c_int)]
-msc.MSPGetVersion.restype = c_char_p
-
-
-def MSPGetVersion(verName: bytes) -> bytes:
-    errorCode = c_int()
-    version: bytes = msc.MSPGetVersion(verName, byref(errorCode))
-    MSPAssert(errorCode.value, "MSPGetVersion failed")
-    return version
+    def MSPGetVersion(self, verName: bytes) -> bytes:
+        errorCode = c_int()
+        version: bytes = self.msc.MSPGetVersion(verName, byref(errorCode))
+        MSPAssert(errorCode.value, "MSPGetVersion failed")
+        return version
 
 
 __all__ = [
-    msc,
-    MSPStatus,
-    MSPAudioSampleStatus,
-    MSPRECStatus,
-    MSPEPStatus,
-    MSPTTSStatus,
-    MSPHCRDataStatus,
-    MSPIVWMSGStatus,
-    MSPDATASampleStatus,
-    MSPAssert,
-    MSPLogin,
-    MSPLogout,
-    MSPSetParam,
-    MSPGetParam,
-    MSPUploadData,
-    MSPGetVersion,
+    "MSPStatus",
+    "MSPAudioSampleStatus",
+    "MSPRECStatus",
+    "MSPEPStatus",
+    "MSPTTSStatus",
+    "MSPHCRDataStatus",
+    "MSPIVWMSGStatus",
+    "MSPDATASampleStatus",
+    "MSPAssert",
+    "MSP",
 ]

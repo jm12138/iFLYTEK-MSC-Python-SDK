@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='msc',
-    version='0.1.0',
+    version='0.2.0',
     description='A package for IFLYTEK MSC.',
     long_description=open('README.md', encoding='UTF-8').read(),
     long_description_content_type='text/markdown',
