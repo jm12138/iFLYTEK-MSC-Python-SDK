@@ -168,3 +168,4 @@ msc/msc.cfg
 *.data
 *.jet
 include/
+bin/
