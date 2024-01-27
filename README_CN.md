@@ -15,7 +15,7 @@
 
 * 下载 MSC SDK
 
-    * [SDK Download](https://www.xfyun.cn/sdk/dispatcher)
+    * [SDK 下载](https://www.xfyun.cn/sdk/dispatcher)
 
 * 语音唤醒
 
@@ -222,6 +222,6 @@
         output_stream.write(item)
     ```
 
-## Documentation
+## 文档
 
-* [Offical Documents](https://www.xfyun.cn/doc/mscapi/Windows&Linux/wlapi.html)
+* [官方文档](https://www.xfyun.cn/doc/mscapi/Windows&Linux/wlapi.html)
